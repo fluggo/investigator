@@ -1,0 +1,108 @@
+<h1 class="top">Windows event log</h1>
+
+<div class="container">
+	<p><a href="logs/msvista/search">Back to search</a></p>
+
+	<msvista-entry entry="entry"></msvista-entry>
+
+	<div ng-show="::!!entry.msvistalog.other">
+		<p class="small-header">Additional fields</p>
+
+		<dl class="dl-horizontal">
+			<dt ng-repeat-start="(key, value) in entry.msvistalog.other">{{key}}</dt>
+			<dd ng-repeat-end>{{value}}</dd>
+		</dl>
+	</div>
+
+	<p ng-show="loadingActivities"><i class="fa fa-spin fa-circle-o-notch"></i> Loading activities...</p>
+
+	<div ng-show="!!activities">
+		<p class="small-header">Other events in this activity ({{activities.hits.total}})</p>
+
+		<div class="row">
+			<div class="col-sm-1">
+				
+			</div>
+			<div class="col-sm-11">
+				<table class="table table-condensed" style="line-height: 1.2;">
+					<thead>
+						<th>Time</th>
+						<th>Event ID</th>
+						<th>Message</th>
+					</thead>
+					<tbody>
+						<tr ng-repeat="hit in activities.hits.hits" ng-class="::{active: hit._id === $resolve.msvistaEntry._id}">
+							<td style="width: 10%;" title="{{::hit._source.log.eventTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">
+								<i ng-show="::hit._id === $resolve.msvistaEntry._id" class="fa fa-caret-right"></i>
+								<a href="logs/msvista/entry/{{::hit._index.substring(11)}}/{{::hit._id}}">{{::hit._source.log.eventTime | d3ago}}</a>
+							</td>
+							<td style="width: 10%;">{{::hit._source.msvistalog.system.eventId}}</td>
+							<td>
+								<div class="pull-left" style="line-height: 1.2; padding-right: 0.5em;" ng-switch="::entry.msvistalog.system.severityName">
+									<span ng-switch-when="INFO" class="text-info" title="Info"><i class="fa fa-info-circle"></i></span>
+									<span ng-switch-when="WARNING" class="text-warning" title="Warning"><i class="fa fa-exclamation-triangle"></i></span>
+									<span ng-switch-when="ERROR" class="text-danger" title="Error"><i class="fa fa-times-circle"></i></span>
+									<span ng-switch-when="CRITICAL" class="text-danger" title="CRITICAL"><i class="fa fa-times-circle"></i></span>
+									<span ng-switch-when="AUDIT_FAILURE" class="text-warning" title="Audit failure"><i class="fa fa-times-circle"></i></span>
+									<span ng-switch-when="AUDIT_SUCCESS" class="text-success" title="Audit success"><i class="fa fa-check-circle"></i></span>
+								</div>
+								
+								<div style="line-height: 1.2; padding-left: 1.5em;">{{::hit.elided}}</span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+
+<!--		<ul>
+			<li ng-repeat="hit in activities.hits.hits">
+				<span ng-switch="::entry.msvistalog.system.severityName">
+					<span ng-switch-when="INFO" class="text-info" title="Info"><i class="fa fa-info-circle"></i></span>
+					<span ng-switch-when="WARNING" class="text-warning" title="Warning"><i class="fa fa-exclamation-triangle"></i></span>
+					<span ng-switch-when="ERROR" class="text-danger" title="Error"><i class="fa fa-times-circle"></i></span>
+					<span ng-switch-when="AUDIT_FAILURE" class="text-warning" title="Audit failure"><i class="fa fa-times-circle"></i></span>
+					<span ng-switch-when="AUDIT_SUCCESS" class="text-success" title="Audit success"><i class="fa fa-check-circle"></i></span>
+				</span>
+
+				<span style="white-space: pre-wrap;">{{::hit.elided}}</span>
+			</li>
+		</ul>-->
+	</div>
+
+	<p class="small-header">Technical details</p>
+
+	<div class="row">
+		<div class="col-sm-6">
+			<dl class="dl-horizontal">
+				<dt ng-show="::!!entry.msvistalog.system.severityName">Severity</dt>
+				<dd ng-show="::!!entry.msvistalog.system.severityName">{{::entry.msvistalog.system.severityName}} ({{::entry.msvistalog.system.severity}})</dd>
+				<dt ng-show="::!!entry.msvistalog.system.correlation.activityId">Activity ID</dt>
+				<dd ng-show="::!!entry.msvistalog.system.correlation.activityId">{{::entry.msvistalog.system.correlation.activityId}}</dd>
+				<dt ng-show="::!!entry.msvistalog.system.execution.processId">Process ID</dt>
+				<dd ng-show="::!!entry.msvistalog.system.execution.processId">{{::entry.msvistalog.system.execution.processId}}</dd>
+				<dt ng-show="::!!entry.msvistalog.system.execution.threadId">Thread ID</dt>
+				<dd ng-show="::!!entry.msvistalog.system.execution.threadId">{{::entry.msvistalog.system.execution.threadId}}</dd>
+				<dt ng-show="::entry.msvistalog.system.opcode !== undefined">Opcode</dt>
+				<dd ng-show="::entry.msvistalog.system.opcode !== undefined">
+					<span ng-show="::!!entry.msvistalog.system.opcodeName">{{::entry.msvistalog.system.opcodeName}} ({{::entry.msvistalog.system.opcode}})</span>
+					<span ng-show="::!entry.msvistalog.system.opcodeName">{{::entry.msvistalog.system.opcode}}</span>
+				</dd>
+			</dl>
+		</div>
+		<div class="col-sm-6">
+			<dl class="dl-horizontal">
+				<dt ng-show="::!!entry.msvistalog.system.provider.eventSourceName">Event source</dt>
+				<dd ng-show="::!!entry.msvistalog.system.provider.eventSourceName" title="{{::entry.msvistalog.system.provider.guid}}">{{::entry.msvistalog.system.provider.eventSourceName}}</dd>
+				<dt>Received time</dt>
+				<dd title="{{::entry.log.receivedTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{::entry.log.receivedTime | d3ago}}</dd>
+			</dl>
+		</div>
+	</div>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{$resolve.msvistaEntry | json}}</pre>
+</div>

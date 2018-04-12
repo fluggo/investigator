@@ -1,0 +1,161 @@
+<h1 class="top">Wiki article</h1>
+
+<div ng-show="::!article" class="container">
+	<h1>{{title}}</h1>
+	<p>This article doesn't exist yet.</p>
+</div>
+
+<div ng-show="::!!article" class="container-fluid hidden-print-link">
+	<form name="editForm">
+		<div class="row">
+			<div class="col-md-3">
+				<div ng-show="!editedArticle" style="margin-bottom: 2em;">
+					<h3>Tags</h3>
+					<div role="listitem" ng-repeat="tag in tags" class="shorter-lines">
+						<a ng-class="[tag.found ? null : 'wiki-bad-link']" href="wiki/article/{{encodeURIComponent(tag.tag)}}"><i class="fa fa-question"></i></a> <a ng-class="[tag.found ? null : 'wiki-bad-link']" href="wiki/search?q={{encodeURIComponent('+tag:' + tag.tag)}}">{{tag.tag}}</a><span ng-show="!!tag.value">:<span ng-show="tag.refLink"><a ng-class="[tag.refFound ? null : 'wiki-bad-link']" href="{{tag.refLink}}">{{tag.value}}</a></span><span ng-show="!tag.refLink">{{tag.value}}</span></span>
+					</div>
+				</div>
+				<div ng-show="!!editedArticle">
+					<div class="form-group">
+						<label>Tags</label>
+						<wiki-tag-editor tags="editedArticle.tags" on-change="editedArticle && (editedArticle.tags = tags)"></wiki-tag-editor>
+					</div>
+				</div>
+				<div ng-show="tagRefs.total !== 0 && !editedArticle">
+					<p class="small-header">Used as a tag ({{tagRefs.total}})</p>
+
+					<ul class="list-unstyled">
+						<li ng-repeat="ref in tagRefs.hits"><a href="wiki/article/{{encodeURIComponent(ref.id)}}">{{ref.title}}</a></li>
+						<li ng-show="tagRefs.total > tagRefs.hits.length">(<a href="wiki/search?q={{encodeURIComponent('+tag:' + articleRawId)}}">More&hellip;</a>)</li>
+					</ul>
+				</div>
+				<div ng-show="reverseTagRefs.total !== 0 && !editedArticle">
+					<p class="small-header">Tagged in other articles ({{reverseTagRefs.total}})</p>
+
+					<ul class="list-unstyled">
+						<li ng-repeat="ref in reverseTagRefs.hits">
+							<a href="wiki/article/{{encodeURIComponent(ref.tag)}}"><i class="fa fa-question"></i></a> <a href="wiki/search?q={{encodeURIComponent('+tag:' + ref.tag)}}">{{ref.tag}}</a>&rarr;<a href="wiki/article/{{encodeURIComponent(ref.id)}}">{{ref.title}}</a>
+						</li>
+						<li ng-show="reverseTagRefs.total > reverseTagRefs.hits.length">(More&hellip;)</li>
+					</ul>
+				</div>
+				<div ng-show="hashtagRefs.total !== 0 && !editedArticle">
+					<p class="small-header">Used as a hashtag ({{hashtagRefs.total}})</p>
+
+					<table>
+						<tbody>
+							<tr ng-repeat="ref in hashtagRefs.hits" class="shorter-lines">
+								<td style="vertical-align: top; padding-bottom: 0.5em;"><a href="wiki/article/{{encodeURIComponent(ref.id)}}">{{ref.title}}</a></td>
+								<td style="vertical-align: top; padding-left: 1em; padding-bottom: 0.5em;"><div ng-repeat="line in ref.lines" wiki-textile="line" single-para="true"></div></td>
+							</tr>
+							<tr>
+								<td ng-show="tagRefs.total > tagRefs.hits.length" colspan="2">(<a href="wiki/search?q={{encodeURIComponent('+#' + articleRawId)}}">More&hellip;</a>)</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div ng-show="linkRefs.total !== 0 && !editedArticle">
+					<p class="small-header">Links from other articles ({{linkRefs.total}})</p>
+
+					<table>
+						<tbody>
+							<tr ng-repeat="ref in linkRefs.hits" class="shorter-lines">
+								<td style="vertical-align: top; padding-bottom: 0.5em;"><a href="wiki/article/{{encodeURIComponent(ref.id)}}">{{ref.title}}</a></td>
+								<td style="vertical-align: top; padding-left: 1em; padding-bottom: 0.5em;"><div ng-repeat="line in ref.lines" wiki-textile="line" single-para="true"></div></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="col-md-9" ng-show="!!article">
+				<div ng-show="!editedArticle">
+					<ul class="list-inline hidden-print">
+						<li ng-show="(!viewingOfficial || !hasUnreviewed) && settings.userControls.wiki.view && settings.userControls.wiki.edit"><a ng-click="$event.preventDefault(); startEdit();"><i class="fa fa-fw fa-edit"></i>Edit</a></li>
+						<li ng-show="settings.userControls.wiki.view && settings.userControls.wiki.viewHistory && hasOfficial"><a href="wiki/history/{{::officialArticle.uuid}}"><i class="fa fa-fw fa-history"></i>View history</a></li>
+						<li ng-show="settings.userControls.wiki.view && settings.userControls.wiki.edit"><a ng-click="$event.preventDefault(); startDelete();" class="text-danger"><i class="fa fa-fw fa-trash-o"></i>Delete</a></li>
+					</ul>
+
+					<h1>{{article.title}}</h1>
+
+					<div ng-show="viewingOfficial && hasUnreviewed" class="alert alert-info" role="alert" style="padding: 10px; line-height: 1;">
+						<p>This is the official version of this article. <a ng-click="$event.preventDefault(); setUpArticle(true);" class="alert-link">Click here to see the latest version.</a></p>
+					</div>
+
+					<div ng-show="!viewingOfficial" class="alert alert-warning" role="alert" style="padding: 10px; line-height: 1;">
+						<p>This article is waiting for review. <a ng-click="$event.preventDefault(); setUpArticle(false);" ng-show="hasOfficial" class="alert-link">Click here to switch to the official version.</a></p>
+						<p><ul class="list-inline">
+							<li><a data-ng-click="showUnreviewedHistory = !showUnreviewedHistory;"><i class="fa fa-fw" data-ng-class="[showUnreviewedHistory ? 'fa-caret-down' : 'fa-caret-right']"></i>Unreviewed changes</a></li>
+						</ul></p>
+						<div data-ng-show="!!showUnreviewedHistory" ng-repeat="hit in unreviewedHistory" style="margin-bottom: 0.5em; margin-top: 0.5em; background-color: white; color: #666666" class="panel panel-default">
+							<div class="panel-body">
+								<div>
+									<p class="diff" ng-show="::hit.diff.title.length > 1 || (hit.diff.title.length > 0 && (hit.diff.title[0].added || hit.diff.title[0].removed))"><strong><span ng-repeat="item in hit.diff.title" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></strong></p>
+									<pre class="diff" ng-show="::hit.diff.body.length > 1 || (hit.diff.body.length > 0 && (hit.diff.body[0].added || hit.diff.body[0].removed))"><span ng-repeat="item in hit.diff.body" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></pre>
+									<!--<pre class="diff" ng-show="hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags" ng-class="{ins: item.added, del: item.removed}">{{item.value}}</span></pre>-->
+									<p ng-show="::hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags"><span class="label" ng-class="::{'label-success': item.added, 'label-danger': item.removed}">{{::item.added ? '+' : '-'}}{{::item.value}}</span> </span></p>
+								</div>
+								<ul class="text-muted list-inline" style="margin-bottom: 0px;">
+									<li>{{hit.updatedBy}}</li>
+									<li title="{{::hit.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{hit.updatedTime | d3ago}}</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<div wiki-textile="article.body" class="indented-paras"></div>
+
+					
+					<div class="text-muted shorter-lines">
+						<div ng-show="!!officialArticle.createdTime">Created <span title="{{officialArticle.createdTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{officialArticle.createdTime | d3ago}}</span> by {{officialArticle.createdBy}}</div>
+						<div ng-show="!officialArticle.createdTime">Not yet created</div>
+						<div>Last updated <span title="{{article.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{article.updatedTime | d3ago}}</span> by {{article.updatedBy}}</div>
+					</div>
+				</div>
+
+				<div ng-show="!!editedArticle">
+					<div class="form-group">
+						<input type="text" class="form-control input-lg" ng-model="editedArticle.title" required placeholder="Title"></input>
+					</div>
+
+					<div class="form-group">
+						<label>Article text</label> <a href="wiki/format-help" target="_blank" title="Formatting help"><i class="fa fa-fw fa-question-circle"></i></a>
+						<textarea class="form-control input-sm shorter-lines" style="font-family: monospace;" ng-model="editedArticle.body" ng-model-options="{debounce: 150}" cols="120" rows="30"></textarea>
+					</div>
+
+					<div class="text-right">
+						<span style="margin-right: 1em;" ng-show="settings.userControls.wiki.edit === true"><label style="cursor: pointer"><input ng-model="editedArticle.makeOfficial" type="checkbox"> Save an official version</label></span>
+						<button class="btn btn-default" ng-click="cancelEdit()" ng-disabled="saving"><i class="fa fa-fw fa-times"></i>Cancel</button>
+						<button class="btn btn-primary" ng-click="saveArticle()" ng-disabled="saving"><i class="fa fa-fw fa-save"></i>Save</button>
+					</div>
+
+					<h3>Preview</h3>
+
+					<div class="panel panel-default">
+						<div class="panel-body">
+							<div class="indented-paras" wiki-textile="editedArticle.body"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+<base-dialog id="deleteDialog">
+	<form role="form">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" ng-click="closeDialog();">&times;</button>
+			<h4 class="modal-title">Are you sure?</h4>
+		</div>
+		<div class="modal-body">
+			<p>Are you sure you want to delete the article &ldquo;<strong>{{::title}}</strong>&rdquo;?</p>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" ng-click="closeDialog();" ng-disabled="stateHolder.deleting">Cancel</button>
+			<button type="button" class="btn btn-danger" ng-click="deleteArticle();" ng-disabled="stateHolder.deleting">
+				<i ng-hide="stateHolder.deleting" class="fa fa-fw fa-trash-o"></i>
+				<i ng-show="stateHolder.deleting" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+				Delete</button>
+		</div>
+	</form>
+</base-dialog>

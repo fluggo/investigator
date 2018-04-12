@@ -1,0 +1,37 @@
+<div class="container">
+	<h1>Tag list</h1>
+	<h2>General tags</h2>
+
+	<table class="table table-condensed">
+		<thead>
+			<tr>
+				<th>Tag</th><th>Usage count</th><th>Summary</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="tag in generalTags">
+				<td><a href="wiki/article/{{encodeURIComponent(tag.tag)}}" ng-class="{'text-danger': !tag.article}"><i class="fa fa-question"></i></a> <a href="wiki/search?q={{encodeURIComponent('+tag:' + tag.tag)}}" ng-class="{'text-danger': !tag.article}">{{tag.tag}}</a></td>
+				<td>{{tag.usageCount}}</td>
+				<td wiki-textile="tag.article.summary" single-para="true"></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h2>Valued tags</h2>
+
+	<table class="table table-condensed">
+		<thead>
+			<tr>
+				<th>Tag</th><th>Type</th><th>Usage count</th><th>Summary</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="tag in valuedTags">
+				<td><a href="wiki/article/{{encodeURIComponent(tag.tag)}}" ng-class="{'text-danger': !tag.article}"><i class="fa fa-question"></i></a> <a href="wiki/search?q={{encodeURIComponent('+tag:' + tag.tag)}}" ng-class="{'text-danger': !tag.article}">{{tag.tag}}</a></td>
+				<td>{{tag.article.tagType}}</td>
+				<td>{{tag.usageCount}}</td>
+				<td wiki-textile="tag.article.summary" single-para="true"></td>
+			</tr>
+		</tbody>
+	</table>
+</div>

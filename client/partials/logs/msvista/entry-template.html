@@ -1,0 +1,62 @@
+<div class="panel panel-default">
+	<div class="panel-body" style="padding: 10px;">
+		<div class="pull-right">
+			<ul class="list-inline">
+				<li>{{::$ctrl.entry.msvistalog.system.channel}}</li>
+				<li>{{::$ctrl.entry.msvistalog.system.provider.eventSourceName}}</li>
+				<li>{{::$ctrl.entry.msvistalog.system.computer}}</li>
+			</ul>
+		</div>
+
+		<div>
+			<span ng-switch="::$ctrl.entry.msvistalog.system.eventType">
+				<span ng-switch-when="INFO" class="label label-info"><i class="fa fa-info-circle"></i> Info</span>
+				<span ng-switch-when="WARNING" class="label label-warning"><i class="fa fa-exclamation-triangle"></i> Warning</span>
+				<span ng-switch-when="ERROR" class="label label-danger"><i class="fa fa-times-circle"></i> Error</span>
+				<span ng-switch-when="CRITICAL" class="label label-danger"><i class="fa fa-times-circle"></i> CRITICAL</span>
+				<span ng-switch-when="AUDIT_FAILURE" class="label label-warning"><i class="fa fa-exclamation-triangle"></i> Audit failure</span>
+				<span ng-switch-when="AUDIT_SUCCESS" class="label label-success"><i class="fa fa-check-circle"></i> Audit success</span>
+			</span>
+
+
+
+<!--			<span ng-switch="hit._source.severity">
+				<span ng-switch-when="debug" class="label label-success" title="Debug"><i class="fa fa-terminal"></i> Debug</span>
+				<span ng-switch-when="info" class="label label-info" title="Info"><i class="fa fa-info-circle"></i> Info</span>
+				<span ng-switch-when="warning" class="label label-warning" title="Warning"><i class="fa fa-warning"></i> Warning</span>
+				<span ng-switch-when="error" class="label label-danger" title="Error"><i class="fa fa-times-circle"></i> Error</span>
+				<span ng-switch-when="critical" class="label label-danger" title="Critical"><i class="fa fa-exclamation-triangle"></i> Critical <i class="fa fa-exclamation-triangle"></i></span>
+			</span>-->
+		</div>
+
+		<div style="font-size: 115%; margin-left: 2em; margin-top: 5px;">
+			<div ng-if="::!!$ctrl.entry.msvistalog.system.taskName" style="font-size: 90%;">
+				{{::$ctrl.entry.msvistalog.system.taskName}}
+			</div>
+
+			<p style="white-space: pre-wrap;">{{::$ctrl.entry.log.message}}</p>
+		</div>
+
+		<ul style="margin-top: 0.5em; font-size: 85%; margin-left: 4em; margin-bottom: 0px;" class="text-right list-inline">
+			<li>
+				<span ng-if="hit._source.userName">
+					<span class="dropdown cursor-pointer"><span base-dropdown-context-toggle>as {{hit._source.userName}}</span><ul class="dropdown-menu" role="menu">
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); addTerm('loginName', hit._source.loginName);">Search on this</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); filterTerm('loginName', hit._source.loginName);">Filter this out</a></li>
+					</ul></span>
+				</span>
+				<span ng-if="!!hit._source.host">from
+					<span class="dropdown cursor-pointer"><span base-dropdown-context-toggle>{{hit._source.host}}</span><ul class="dropdown-menu" role="menu">
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); selected.hostName = hit._source.hostName.toLowerCase(); commitLocation();">Search on this</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); filterTerm('hostName', hit._source.hostName);">Filter this out</a></li>
+					</ul></span>
+				</span>
+			</li>
+			<li ng-show="::!!$ctrl.entry.msvistalog.system.opcodeName">{{::$ctrl.entry.msvistalog.system.opcodeName}}</li>
+			<li>Event {{::$ctrl.entry.msvistalog.system.eventId}}</li>
+			<li ng-show="::!!$ctrl.entry.msvistalog.system.samName">{{::$ctrl.entry.msvistalog.system.samName}}</li>
+			<li title="{{::$ctrl.eventTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{$ctrl.eventTime | d3ago}}</li>
+		</ul>
+
+	</div>
+</div>

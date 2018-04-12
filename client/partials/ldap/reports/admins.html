@@ -1,0 +1,31 @@
+<div class="container">
+	<h1>Top-level Admins</h1>
+
+	<h2 ng-repeat-start="domain in reportData" style="page-break-after: avoid;">{{ (domain.domain === 'enterprise') ? 'Enterprise Admins' : (domain.domain + ' Domain Admins') }}</h2>
+
+	<table ng-repeat-end class="table table-condensed hidden-print-link" style="table-layout: fixed;">
+		<col style="width: 50%;">
+		<col>
+		<col>
+		<col>
+		<thead>
+			<tr><th>Account</th><th>Created</th><th>Last logon</th><th>Password Last Changed</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="account in domain.users" style="page-break-inside: avoid;">
+				<td>
+					<a href="ldap/object/{{::account.ldap.objectGUID}}"><i class="fa fa-fw fa-user"></i> {{::account.ldap['msDS-PrincipalName']}}</a>
+					<ul>
+						<li ng-show="account.ldapDecoded.userAccountControl.accountDisabled">Disabled</li>
+						<li ng-show="account.ldapDecoded.userAccountControl.passwordDoesNotExpire">Password does not expire</li>
+					</ul>
+				</td>
+				<td>{{account.ldap.whenCreated | d3date:"%Y-%m-%d"}}</td>
+				<td><span ng-show="account.ldap.lastLogonTimestamp < totakekeTwoWeeksAgo">{{account.ldap.lastLogonTimestamp | d3date:"%Y-%m-%d"}}</span>
+					<span ng-show="account.ldap.lastLogonTimestamp >= totakekeTwoWeeksAgo" class="text-muted"><em>Recent</em></span>
+					<span ng-show="!account.ldap.lastLogonTimestamp">Never</span></td>
+				<td>{{account.ldap.pwdLastSet | d3date:"%Y-%m-%d"}}</td>
+			</tr>
+		</tbody>
+	</table>
+</div>

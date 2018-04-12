@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head data-client-version="<!-- @echo CLIENT_VERSION -->" data-ws-base-path="<!-- @echo WS_BASE_PATH -->">
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Investigator</title>
+		<base href="<!-- @echo URL_BASE_PATH -->">
+
+		<link rel="shortcut icon" href="<!-- @echo URL_BASE_PATH-->js/console-app.ico">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha256-3dkvEK0WLHRJ7/Csr0BZjAWxERc5WH7bdeUya2aXxdU=" crossorigin="anonymous" />
+		<link rel="stylesheet" href="js/app.css" />
+	</head>
+	<body ng-controller="AppController" ng-csp ng-app="investigator">
+		<div id="topnavbar" class="hidden-print">
+			<span class="ng-cloak"><a href="."><i class="fa fa-fw fa-home"></i>Home</a>
+				<span ng-show="settings.userControls.wiki.view">| <a href="wiki/search"><i class="fa fa-fw fa-search"></i>Wiki</a></span>
+				| <a href="ldap/search"><i class="fa fa-fw fa-search"></i>LDAP</a>
+				<span ng-show="settings.userControls.wsa.search">| <a href="logs/wsa/search"><i class="fa fa-fw fa-search"></i>WSA</a></span>
+				| <a href="logs/cylance/search"><i class="fa fa-fw fa-search"></i>Cylance logs</a>
+				| <a href="logs/msvista/search"><i class="fa fa-fw fa-search"></i>Windows events</a>
+				| <a href="logs/sql/search"><i class="fa fa-fw fa-search"></i>SQL logs</a>
+				| <a href="logs/syslog/search"><i class="fa fa-fw fa-search"></i>Syslog</a>
+				<span ng-show="settings.userControls.netflow.view">| <a href="netflow/search"><i class="fa fa-fw fa-search"></i>Netflow</a></span>
+				<span ng-show="settings.userControls.wiki.edit === true">| <a href="wiki/wiki-review" ng-click="reloadRoute()"><i class="fa fa-fw fa-check"></i>Review</a><span ng-show="wikiStats.unreviewedArticleCount"> <span class="label label-warning">{{wikiStats.unreviewedArticleCount}}</span></span></span>
+			</span>
+			<span class="pull-right ng-cloak">{{socketStatus}} | <a style="display: inline-block;" ng-click="top.toggleTimeEditor();" ng-class="{'time-selector-highlighted': timeRangeActive}"><i class="fa fa-fw fa-clock-o"></i>{{top.selectedPredefinedTime.label || '(shrug)'}}</a><span ng-show="settings.userControls.wiki.view && settings.userControls.wiki.edit"> | <a href="wiki/new-article">New article</a></span></span>
+			<i ng-if="routeLoading" class="fa fa-spin fa-circle-o-notch"></i>
+		</div>
+
+		<div ng-show="top.showTimeEditor" id="time-editor" class="panel ng-cloak" style="width: 65em;">
+			<div class="panel-body">
+				<div class="row">
+					<div class="col-sm-3" style="border-right: 1px solid #eee;">
+						<form name="top.timeEntryForm" role="form" ng-submit="top.commitTimeEntry();">
+							<div style="margin-bottom: 0.7em;" ng-class="{'has-error': top.timeEntryForm.enteredStart.$invalid}">From: <a ng-click="top.showTimeEntryHelp = true;"><i title="Help" class="fa fa-question-circle"></i></a><input type="text" class="form-control input-sm" name="enteredStart" reltime placeholder="now-3h" ng-model="top.enteredStart" ng-required style="height: 22px;"></div>
+							<div style="margin-bottom: 0.7em;" ng-class="{'has-error': top.timeEntryForm.enteredEnd.$invalid}">To: <input type="text" class="form-control input-sm" name="enteredEnd" reltime placeholder="now" ng-model="top.enteredEnd" ng-required style="height: 22px;"></div>
+							<div style="margin-bottom: 0.7em;">Refresh every: <select class="form-control input-sm">
+								<option>off</option>
+								<option>30s</option>
+							</select></div>
+							<div style="text-align: right;"><button class="btn btn-default btn-sm" ng-disabled="top.timeEntryForm.$invalid" ng-click="top.commitTimeEntry();">Apply</button></div>
+						</form>
+					</div>
+					<div class="col-sm-9">
+						<div class="row">
+							<div ng-repeat="column in ::top.predefinedTimeColumns" class="col-sm-3">
+								<ul class="list-unstyled">
+									<li ng-repeat="item in ::column"><a ng-class="{active: item.id === top.selectedPredefinedTime.id}" ng-click="top.setTimeRange({start: item.start, end: item.end});">{{::item.label}}</a></li>
+								</ul>
+							</div>
+						</div>
+						<div class="row col-xs-12" style="text-align: left;">
+							<label><input type="checkbox" ng-model="top.timeRangeLocked"> This window only</label>
+						</div>
+					</div>
+				</div>
+				<div ng-show="top.showTimeEntryHelp">
+					<div class="row" style="margin-top: 1em;">
+						<div class="col-sm-2 text-primary">now</div>
+						<div class="col-sm-10">This very second.</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-2 text-primary">now-1h</div>
+						<div class="col-sm-10">An hour ago.</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-2 text-primary">now/h</div>
+						<div class="col-sm-10">Now, rounded down (for "From") or up (for "To") to the nearest hour. Setting both "From" and "To" to <span class="text-primary">now/h</span> at 2:45 PM will show the hour from 2:00 PM to 3:00 PM.</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-2 text-primary">now-1h/h</div>
+						<div class="col-sm-10">An hour ago, rounded down (for "From") or up (for "To") to the nearest hour. Setting both "From" and "To" to <span class="text-primary">now/h</span> at 2:45 PM will show the hour from 1:00 PM to 2:00 PM.</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-2 text-primary">2016-03-12 13:45</div>
+						<div class="col-sm-10">March 12th 2016 at 1:45 PM Central Time.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="topbar">
+			<div id="search-box" quick-search on-select="$location.url(row.href);" class="hidden-print ng-cloak">
+				<input quick-search-text-box class="form-control input-sm" tabindex="1" type="search" placeholder="Quick search" ng-model="searchText">
+				<quick-search-list ng-show="!!searchResults" class="panel panel-default" highlight-index="highlightIndex" search-results="searchResults"></quick-search-list>
+			</div>
+		</div>
+
+		<div ng-show="!routeChangeError" id="content" ng-view></div>
+		<error-message id="errorScreen" class="container" error="routeChangeError" ng-show="!!routeChangeError"></error-message>
+
+		<base-temp-alert></base-temp-alert>
+
+		<div ng-hide="true">Loading</div>
+
+		<script defer src="js/bundle.js"></script>
+	</body>
+</html>

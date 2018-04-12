@@ -1,0 +1,48 @@
+<h1 class="top">Raw search</h1>
+
+<div class="container">
+	<form name="searchForm" role="form" ng-submit="commitSearch(null, 1, true);">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+	</form>
+
+	<dl class="dl-horizontal">
+		<dt>Total hits</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.hits.total}}</span></dd>
+	</dl>
+
+	<ul class="pagination pagination-sm" ng-show="pageCount > 1">
+   <li ng-class="{disabled: page === 1}">
+      <a aria-label="Previous" ng-click="commitSearch(null, page - 1, true);">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <li ng-class="{active: page === pageLink}" ng-repeat="pageLink in pageList"><a ng-click="commitSearch(null, pageLink, true);">{{pageLink}}</a></li>
+    <li ng-class="{disabled: page === pageCount}">
+      <a aria-label="Next" ng-click="commitSearch(null, page + 1, true);">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+
+	<div ng-repeat="hit in searchResults.hits.hits" style="margin-bottom: 1em;">
+		<p><a ng-click="hit.open = !hit.open"><i class="fa fa-fw" ng-class="[hit.open ? 'fa-caret-down' : 'fa-caret-right']"></i> Index: {{hit._index}} Type: {{hit._type}} ID: {{hit._id}}</a><br>
+		<span ng-show="!hit.open" style="display: inline-block; padding-left: 2em; width: 40em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{hit._source | json}}</span></p>
+		<pre ng-show="!!hit.open">{{hit._source | json}}</pre>
+	</div>
+
+	<ul class="pagination pagination-sm" ng-show="pageCount > 1">
+		<li ng-class="{disabled: page === 1}">
+			<a aria-label="Previous" ng-click="commitSearch(null, page - 1, true);">
+				<span aria-hidden="true">&laquo;</span>
+			</a>
+		</li>
+		<li ng-class="{active: page === pageLink}" ng-repeat="pageLink in pageList"><a ng-click="commitSearch(null, pageLink, true);">{{pageLink}}</a></li>
+		<li ng-class="{disabled: page === pageCount}">
+			<a aria-label="Next" ng-click="commitSearch(null, page + 1, true);">
+				<span aria-hidden="true">&raquo;</span>
+			</a>
+		</li>
+	</ul>
+</div>

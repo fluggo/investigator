@@ -1,0 +1,141 @@
+<h1 class="top">LDAP object</h1>
+
+<div class="container hidden-print-link">
+	<p><a href="ldap/search">Back to search</a></p>
+	<h1>{{::name}} <small ng-show="ldap.cn !== name">{{::ldap.cn}}</small></h1>
+	<h2 style="margin-top: 0em;"><span ng-show="ldap.department || ldap.description">{{ldap.department || ldap.description}}</span><span ng-show="(ldap.department || ldap.description) && ldap.company">, </span><span ng-show="ldap.company">{{ldap.company}}</span></h2>
+
+	<p ng-show="::!!ldap.parentGUID">Parent: <ldap-object-link object-guid="ldap.parentGUID"></ldap-object-link></p>
+
+	<p>
+		<span class="label label-danger" ng-show="lastLogonTimestamp < monthAgo">Abandoned account?</span>
+		<span class="label label-danger" ng-show="userAccountControl.passwordDoesNotExpire">Non-expiring password</span>
+		<span class="label label-danger" ng-show="userAccountControl.accountDisabled">Account is disabled</span>
+		<span class="label label-danger" ng-show="userAccountControl.lockedOut">Locked out</span>
+		<span class="label label-warning" ng-show="userAccountControl.passwordNotRequired">Exempt from password complexity requirements</span>
+		<span class="label label-warning" ng-show="userAccountControl.passwordExpired">Password expired</span>
+		<span ng-show="userAccountControl.preauthNotRequired"><span class="label label-danger">Preauthentication is not required</span> (<a href="https://redmondmag.com/Articles/2012/02/01/Understanding-the-Essentials-of-the-Kerberos-Protocol.aspx?p=1">See here for more info</a>) </span>
+		<span class="label label-primary" ng-show="userAccountControl.normalAccount">User account</span>
+		<span class="label label-warning" ng-show="userAccountControl.interdomainTrustAccount">Inter-domain trust account</span>
+		<span class="label label-primary" ng-show="userAccountControl.workstationTrustAccount">Workstation trust account</span>
+		<span class="label label-primary" ng-show="userAccountControl.serverTrustAccount">Server trust account</span>
+		<span class="label label-danger" ng-show="userAccountControl.trustedForDelegation">Trusted for delegation</span>
+		<span class="label label-warning" ng-show="userAccountControl.trustedToAuthenticateForDelegation">Trusted for constrained delegation</span>
+		<span class="label label-warning" ng-show="userAccountControl.notDelegated">Not allowed to delegate</span>
+		<span class="label label-primary" ng-show="userAccountControl.smartcardRequired">Smartcard required</span>
+		<span class="label label-warning" ng-show="userAccountControl.lockedOut">Password expired</span>
+	</p>
+
+	<p ng-show="::!!ldap.info">{{ldap.info}}</p>
+
+	<dl class="dl-horizontal">
+		<dt ng-show="!!children.length">Children</dt>
+		<dd ng-show="!!children.length">
+			<ul class="list-unstyled">
+				<li ng-repeat="child in children"><ldap-object-link summary="child"></ldap-object-link></li>
+			</ul>
+		</dd>
+	</dl>
+
+	<div class="row">
+		<div class="col-xs-6">
+			<dl class="dl-horizontal">
+				<dt ng-show="::!!ldap.operatingSystem">Operating system</dt>
+				<dd ng-show="::!!ldap.operatingSystem">{{::ldap.operatingSystem}}</dd>
+				<dt ng-show="::!!ldap.dNSHostName">FQDN</dt>
+				<dd ng-show="::!!ldap.dNSHostName">{{::ldap.dNSHostName}}</dd>
+				<dt ng-show="::!!ldap['msDS-PrincipalName']">SAM account name</dt>
+				<dd ng-show="::!!ldap['msDS-PrincipalName']">{{::ldap['msDS-PrincipalName']}}</dd>
+				<dt ng-show="::!!ldap.userPrincipalName">User principal name</dt>
+				<dd ng-show="::!!ldap.userPrincipalName">{{::ldap.userPrincipalName}}</dd>
+				<dt ng-show="::!!ldap.mail">Primary email</dt>
+				<dd ng-show="::!!ldap.mail"><a href="mailto:{{::ldap.mail}}">{{::ldap.mail}}</a></dd>
+				<dt ng-show="::!!emails">Email addresses</dt>
+				<dd ng-show="::!!emails">
+					<span ng-repeat="email in emails"><a href="mailto:{{email}}">{{email}}</a><span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::!!exchangeDelegates">Mailbox delegates</dt>
+				<dd ng-show="::!!exchangeDelegates">
+					<ul class="list-unstyled">
+						<li ng-repeat="dn in exchangeDelegates"><ldap-object-link distinguished-name="dn"></ldap-object-link></li>
+					</ul>
+				</dd>
+				<dt ng-show="::!!ldap.altRecipient">Mail forwards to</dt>
+				<dd ng-show="::!!ldap.altRecipient"><ldap-object-link distinguished-name="ldap.altRecipient"></ldap-object-link></dd>
+			</dl>
+		</div>
+		<div class="col-xs-6">
+			<dl class="dl-horizontal">
+				<dt ng-show="::!!ldap.description && (ldap.description !== ldap.company)">Description</dt>
+				<dd ng-show="::!!ldap.description && (ldap.description !== ldap.company)">{{::ldap.description}}</dd>
+				<dt ng-show="::!!ldap.company">Company</dt>
+				<dd ng-show="::!!ldap.company">{{::ldap.company}}</dd>
+				<dt ng-show="::!!ldap.department">Department</dt>
+				<dd ng-show="::!!ldap.department">{{::ldap.department}}</dd>
+				<dt ng-show="::!!ldap.telephoneNumber">Phone number</dt>
+				<dd ng-show="::!!ldap.telephoneNumber">{{::ldap.telephoneNumber}}</dd>
+				<dt ng-show="::!!ldap.mobile">Mobile phone number</dt>
+				<dd ng-show="::!!ldap.mobile">{{::ldap.mobile}}</dd>
+			</dl>
+		</div>
+	</div>
+
+	<dl class="dl-horizontal">
+		<dt ng-show="::!!memberOf.length">Member of</dt>
+		<dd ng-show="::!!memberOf.length">
+			<ul class="list-unstyled">
+				<li ng-repeat="obj in memberOf"><ldap-object-link summary="obj" show-domain="true"></ldap-object-link></li>
+			</ul>
+		</dd>
+		<dt ng-show="::!!member.length">Members</dt>
+		<dd ng-show="::!!member.length">
+			<ul class="list-unstyled">
+				<li ng-repeat="obj in member"><ldap-object-link summary="obj" show-domain="true"></ldap-object-link></li>
+			</ul>
+		</dd>
+		<dt ng-show="::!!lastLogonTimestamp">Last logon (<a href="http://blogs.technet.com/b/askds/archive/2009/04/15/the-lastlogontimestamp-attribute-what-it-was-designed-for-and-how-it-works.aspx">-ish</a>)</dt>
+		<dd title="{{::lastLogonTimestamp | d3date:'%a %b %-d %Y %H:%M:%S'}}" ng-show="::!!lastLogonTimestamp">{{::lastLogonTimestamp | d3ago}}</dd>
+		<dt ng-show="::!!pwdLastSet">Password last set</dt>
+		<dd title="{{::pwdLastSet | d3date:'%a %b %-d %Y %H:%M:%S'}}" ng-show="::!!pwdLastSet">{{::pwdLastSet | d3ago}}</dd>
+		<dt ng-show="::!!servicePrincipalName">Service principal names</dt>
+		<dd ng-show="::!!servicePrincipalName">
+			<ul class="list-unstyled">
+				<li ng-repeat="spn in servicePrincipalName">{{spn}}</li>
+			</ul>
+		</dd>
+	</dl>
+
+	<h2>Wiki</h2>
+
+	<ul class="list-inline" ng-show="alternatives.length > 1">
+		<li ng-repeat="alt in alternatives" class="radio-inline"><label><input type="radio" ng-value="$index" ng-model="alternativeIndex" ng-change="setAlternative($index);">{{alt.name}}</label></li>
+	</ul>
+
+	<p ng-show="wiki.recommendations.noauto && !showWikiEditor">This object isn't normally registered in the wiki. <a ng-click="showWikiEditor = true;">Click here</a> to create a wiki entry anyways.</p>
+
+	<p class="text-danger" ng-show="wiki.multipleArticles">This object has multiple wiki articles defined. Delete the extras.</p>
+
+	<wiki-mini-editor ng-if="!!alternative" article="alternative.wiki" recommendations="alternative.recommendations"></wiki-mini-editor>
+
+	<h2>LDAP details</h2>
+
+	<dl class="dl-horizontal">
+		<dt>Created</dt>
+		<dd title="{{::whenCreated | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::whenCreated | d3ago}}</dd>
+		<dt>Last changed</dt>
+		<dd title="{{::whenChanged | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::whenChanged | d3ago}}</dd>
+		<dt>Distinguished Name</dt>
+		<dd>{{::ldap.distinguishedName}}</dd>
+		<dt ng-show="::!!ldap.objectSid">SID</dt>
+		<dd ng-show="::!!ldap.objectSid">{{::ldap.objectSid}}</dd>
+		<dt>Object category</dt>
+		<dd><ldap-object-link distinguished-name="ldap.objectCategory"></ldap-object-link> (<a href="ldap/search?q=ldap.objectCategory:&quot;{{::ldap.objectCategory}}&quot;"><i class="fa fa-search"></i> Search</a>)</dd>
+		<dt>Object classes</dt>
+		<dd>
+			<span ng-repeat="class in ldap.objectClass"><a href="ldap/search?q=ldap.objectClass:{{::class}}"><i class="fa fa-search"></i> {{class}}</a><span ng-show="::!$last">, </span></span></dd>
+	</dl>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{ldap | json}}</pre>
+</div>

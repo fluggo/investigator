@@ -1,0 +1,48 @@
+<h1 class="top"><i class="fa fa-history"></i> Article history</h1>
+
+<div class="container">
+	<h2><i class="fa fa-history"></i> Article history: {{::originalArticle._source.wiki.title}}</h2>
+	<p><a href="wiki/article/{{::encodeURIComponent(originalArticle._id)}}">Back to article</a></p>
+
+	<dl class="dl-horizontal">
+		<dt>Versions</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{itemCount}}</span></dd>
+	</dl>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<div ng-repeat="hit in searchResults" style="margin-bottom: 1em;" class="panel panel-default">
+		<div class="panel-body">
+			<p class="diff" ng-show="::hit.diff.title.length > 1 || (hit.diff.title.length > 0 && (hit.diff.title[0].added || hit.diff.title[0].removed))">Title: <strong><span ng-repeat="item in hit.diff.title" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></strong></p>
+			<pre class="diff" ng-show="::hit.diff.body.length > 1 || (hit.diff.body.length > 0 && (hit.diff.body[0].added || hit.diff.body[0].removed))"><span ng-repeat="item in hit.diff.body" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></pre>
+			<!--<pre class="diff" ng-show="hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags" ng-class="{ins: item.added, del: item.removed}">{{item.value}}</span></pre>-->
+			<p ng-show="::hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags"><span class="label" ng-class="::{'label-success': item.added, 'label-danger': item.removed}">{{::item.added ? '+' : '-'}}{{::item.value}}</span> </span></p>
+
+			<ul class="text-muted list-inline">
+				<li>{{::hit.updatedBy}}</li>
+				<li title="{{::hit.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::hit.updatedTime | d3ago}}</li>
+				<li ng-show="::hit.firstCommit"><span class="label label-primary">Original</span></li>
+			</ul>
+
+			<p data-ng-show="::!!hit.unreviewedHistory"><a data-ng-click="hit.showUnreviewedHistory = !hit.showUnreviewedHistory;"><i class="fa fa-fw" data-ng-class="[hit.showUnreviewedHistory ? 'fa-caret-down' : 'fa-caret-right']"></i>Proposed changes</a></p>
+			<div data-ng-show="!!hit.showUnreviewedHistory" ng-repeat="subhit in hit.unreviewedHistory" style="margin-bottom: 0.5em; margin-top: 0.5em; padding: 1em; background-color: white;" data-ng-style="{'border-bottom': $last ? null : '1px solid #eee'}">
+				<div>
+					<p class="diff" ng-show="::subhit.diff.title.length > 1 || (subhit.diff.title.length > 0 && (subhit.diff.title[0].added || subhit.diff.title[0].removed))"><strong><span ng-repeat="item in subhit.diff.title" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></strong></p>
+					<pre class="diff" ng-show="::subhit.diff.body.length > 1 || (subhit.diff.body.length > 0 && (subhit.diff.body[0].added || subhit.diff.body[0].removed))"><span ng-repeat="item in subhit.diff.body" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></pre>
+					<p ng-show="::subhit.diff.tags.length > 0"><span ng-repeat="item in subhit.diff.tags"><span class="label" ng-class="::{'label-success': item.added, 'label-danger': item.removed}">{{::item.added ? '+' : '-'}}{{::item.value}}</span> </span></p>
+				</div>
+				<ul class="text-muted list-inline" style="margin-bottom: 0px;">
+					<li>{{::subhit.updatedBy}}</li>
+					<li title="{{::subhit.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::subhit.updatedTime | d3ago}}</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<!--<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{searchResults | json}}</pre>-->
+</div>

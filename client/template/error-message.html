@@ -1,0 +1,25 @@
+<div class="error-message" data-ng-if="!!error">
+	<div data-ng-show="!!error">
+		<p data-ng-show="!!error.contextMessage">{{error.contextMessage}}</p>
+
+		<div style="border: 1px solid rgb(90%,90%,90%); padding: 0.5em; margin-bottom: 10px; box-shadow: rgba(0,0,0,0.4) 3px 3px 3px;">
+			<p data-ng-show="!!error.message">{{error.message}}</p>
+			<p style="font-size: 90%;" data-ng-show="!!error.submessage">{{error.submessage}}</p>
+
+			<div data-ng-show="error.stackTrace">
+				<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showStackTrace = !showStackTrace;">
+					<i class="fa fa-fw" data-ng-class="[showStackTrace ? 'fa-caret-down' : 'fa-caret-right']"></i>Stack trace
+				</div>
+				<pre style="margin-left: 20px;" data-ng-show="!!showStackTrace">{{error.stackTrace}}</pre>
+			</div>
+		</div>
+
+		<p class="text-right" style="font-size: 80%; margin-bottom: 0px;" data-ng-show="error.url">{{error.method}} {{error.url}}</p>
+		<p class="text-right" style="font-size: 80%; margin-bottom: 0px;" data-ng-show="error.code">{{error.code}}</p>
+	</div>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw error
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{error | json}}</pre>
+</div>

@@ -1,0 +1,82 @@
+<h1 class="top"><i class="fa fa-check"></i> Wiki review</h1>
+
+<div class="container">
+	<dl class="dl-horizontal" ng-show="!!searchResults || loading">
+		<dt>Articles found</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.length}}</span></dd>
+	</dl>
+
+	<div ng-repeat="hit in searchResults" class="panel panel-primary">
+		<div class="panel-heading cursor-pointer" ng-click="hit.open = !hit.open">
+			<span ng-show="!!hit.saved" class="label pull-right" ng-class="[hit.savedLabel]">{{hit.saved}}</span>
+			<h4 class="panel-title">{{hit._source.wikiUnreviewed.title}}<small ng-show="!hit._source.wiki.title && !hit.saved"> (new article)</small></h4>
+		</div>
+		<div ng-show="hit.open" class="panel-body">
+			<p class="diff" ng-show="::hit.diff.title.length > 1 || (hit.diff.title.length > 0 && (hit.diff.title[0].added || hit.diff.title[0].removed))">Title: <strong><span ng-repeat="item in hit.diff.title" ng-class="::{ins: hit._source.wiki.title && item.added, del: hit._source.wiki.title && item.removed}">{{item.value}}</span></strong></p>
+			<pre class="diff" ng-show="::hit.diff.body.length > 1 || (hit.diff.body.length > 0 && (hit.diff.body[0].added || hit.diff.body[0].removed))"><span ng-repeat="item in hit.diff.body" ng-class="::{ins: hit._source.wiki.title && item.added, del: hit._source.wiki.title && item.removed}">{{item.value}}</span></pre>
+			<!--<pre class="diff" ng-show="hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags" ng-class="{ins: item.added, del: item.removed}">{{item.value}}</span></pre>-->
+			<p ng-show="::hit.diff.tags.length > 0"><span ng-repeat="item in hit.diff.tags"><span class="label" ng-class="::{'label-success': hit._source.wiki.title && item.added, 'label-danger': hit._source.wiki.title && item.removed, 'label-primary': !hit._source.wiki.title}">{{::hit._source.wiki.title ? (item.added ? '+' : '-') : ''}}{{::item.value}}</span> </span></p>
+
+			<ul class="list-inline">
+				<li>{{::hit.allUpdatedBy ? hit.allUpdatedBy : 'Multiple people'}}</li>
+				<li title="{{::subhit.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::hit.updatedTime | d3ago}}</li>
+				<li><a ng-show="::hit._source.wiki.title" href="wiki/article/{{::encodeURIComponent(hit._id)}}?official" target="_blank">View official article</a></li>
+				<li><a href="wiki/article/{{::encodeURIComponent(hit._id)}}" target="_blank">View current article</a></li>
+			</ul>
+
+			<p data-ng-show="::hit.unreviewedHistory.length > 1"><a data-ng-click="hit.showUnreviewedHistory = !hit.showUnreviewedHistory;"><i class="fa fa-fw" data-ng-class="[hit.showUnreviewedHistory ? 'fa-caret-down' : 'fa-caret-right']"></i>Proposed changes ({{hit.unreviewedHistory.length}})</a></p>
+			<div data-ng-show="!!hit.showUnreviewedHistory" ng-repeat="subhit in hit.unreviewedHistory" style="margin-top: 0.5em; padding: 1em; background-color: white;" data-ng-style="{'border-bottom': $last ? null : '1px solid #eee'}">
+				<div>
+					<p class="diff" ng-show="::subhit.diff.title.length > 1 || (subhit.diff.title.length > 0 && (subhit.diff.title[0].added || subhit.diff.title[0].removed))"><strong><span ng-repeat="item in subhit.diff.title" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></strong></p>
+					<pre class="diff" ng-show="::subhit.diff.body.length > 1 || (subhit.diff.body.length > 0 && (subhit.diff.body[0].added || subhit.diff.body[0].removed))"><span ng-repeat="item in subhit.diff.body" ng-class="::{ins: item.added, del: item.removed}">{{item.value}}</span></pre>
+					<p ng-show="::subhit.diff.tags.length > 0"><span ng-repeat="item in subhit.diff.tags"><span class="label" ng-class="::{'label-success': item.added, 'label-danger': item.removed}">{{::item.added ? '+' : '-'}}{{::item.value}}</span> </span></p>
+				</div>
+				<ul class="list-inline" style="margin-bottom: 0px;">
+					<li>{{::subhit.updatedBy}}</li>
+					<li title="{{::subhit.updatedTime | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{::subhit.updatedTime | d3ago}}</li>
+				</ul>
+			</div>
+
+			<p class="text-right" ng-show="!hit.saved">
+				<button class="btn btn-success btn-sm" ng-click="acceptChanges(hit);" ng-disabled="saving"><i class="fa fa-fw2 fa-check"></i>Accept {{::hit._source.wiki.title ? "changes" : "new article"}}</button>
+				<button class="btn btn-danger btn-sm" ng-click="startRevert(hit);" ng-show="::!!hit._source.wiki.title" ng-disabled="saving"><i class="fa fa-fw2 fa-fast-backward"></i>Revert</button>
+				<button class="btn btn-danger btn-sm" ng-click="startDelete(hit);" ng-show="::!hit._source.wiki.title" ng-disabled="saving"><i class="fa fa-fw2 fa-trash-o"></i>Delete</button>
+			</p>
+		</div>
+	</div>
+
+</div>
+
+<base-dialog id="deleteDialog">
+	<form role="form">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" ng-click="closeDialog();">&times;</button>
+			<h4 class="modal-title">Are you sure?</h4>
+		</div>
+		<div class="modal-body">
+			<p>This will delete the article &ldquo;<strong>{{::title}}</strong>&rdquo;. Are you sure you want to continue?</p>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" ng-click="closeDialog();" ng-disabled="stateHolder.deleting">Cancel</button>
+			<button type="button" class="btn btn-danger" ng-click="deleteArticle();" ng-disabled="stateHolder.deleting">
+				<i ng-hide="stateHolder.deleting" class="fa fa-fw2 fa-trash-o"></i><i ng-show="stateHolder.deleting" class="fa fa-fw2 fa-circle-o-notch fa-spin"></i>Delete</button>
+		</div>
+	</form>
+</base-dialog>
+
+<base-dialog id="revertDialog">
+	<form role="form">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" ng-click="closeDialog();">&times;</button>
+			<h4 class="modal-title">Are you sure?</h4>
+		</div>
+		<div class="modal-body">
+			<p>This will revert the article &ldquo;<strong>{{::title}}</strong>&rdquo; to its official version. Are you sure you want to continue?</p>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" ng-click="closeDialog();" ng-disabled="stateHolder.reverting">Cancel</button>
+			<button type="button" class="btn btn-danger" ng-click="revertArticle();" ng-disabled="stateHolder.reverting">
+				<i ng-hide="stateHolder.reverting" class="fa fa-fw2 fa-fast-backward"></i><i ng-show="stateHolder.reverting" class="fa fa-fw2 fa-circle-o-notch fa-spin"></i>Revert</button>
+		</div>
+	</form>
+</base-dialog>

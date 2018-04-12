@@ -1,0 +1,95 @@
+<h1 class="top">Bunyan log entry</h1>
+
+<div class="container">
+	<div class="pull-right">{{::entry.bunyan.name}}</div>
+
+	<p>
+		<span ng-switch="::entry.bunyan.interest">
+			<!-- Interest as labels in the label area -->
+			<span ng-switch-when="1" class="label label-default" title="Very low interest"><i class="fa fa-arrow-circle-o-down"></i><i class="fa fa-arrow-circle-o-down"></i> Very low interest</span>
+			<span ng-switch-when="2" class="label label-default" title="Low interest"><i class="fa fa-arrow-circle-o-down"></i> Low interest</span>
+			<span ng-switch-when="3" class="label label-info" title="Normal interest"><i class="fa fa-circle-o"></i> Normal interest</span>
+			<span ng-switch-when="4" class="label label-warning" title="High interest"><i class="fa fa-arrow-circle-o-up"></i> High interest</span>
+			<span ng-switch-when="5" class="label label-danger" title="Very high interest"><i class="fa fa-arrow-circle-up"></i><i class="fa fa-arrow-circle-up"></i> Very high interest</span>
+		</span>
+
+		<span ng-switch="::level">
+			<!-- Severity as labels in the label area -->
+			<span ng-switch-when="trace" class="label label-success" title="Debug"><i class="fa fa-terminal"></i> Debug</span>
+			<span ng-switch-when="debug" class="label label-success" title="Debug"><i class="fa fa-terminal"></i> Debug</span>
+			<span ng-switch-when="info" class="label label-info" title="Info"><i class="fa fa-info-circle"></i> Info</span>
+			<span ng-switch-when="warning" class="label label-warning" title="Warning"><i class="fa fa-warning"></i> Warning</span>
+			<span ng-switch-when="error" class="label label-danger" title="Error"><i class="fa fa-times-circle"></i> Error</span>
+			<span ng-switch-when="fatal" class="label label-danger" title="Critical"><i class="fa fa-exclamation-triangle"></i> Fatal <i class="fa fa-exclamation-triangle"></i></span>
+		</span>
+
+		<span ng-if="::entry.bunyan.securityRelevant" class="label label-danger"><i class="fa fa-lock"></i> Security Relevant</span>
+	</p>
+
+	<p style="font-size: 140%;">{{entry.bunyan.msg}}</p>
+
+	<ul class="text-right list-inline">
+		<li>
+			<span ng-show="::entry.bunyan.user">
+				as {{entry.bunyan.user}}
+			</span>
+			<span ng-if="::entry.bunyan.hostname">
+				from {{entry.bunyan.hostname}}
+			</span>
+		</li>
+		<li title="{{::entry.log.eventTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{::entry.log.eventTime | d3ago}}</li>
+	</ul>
+
+	<p class="small-header" data-ng-show="::!!entry.bunyan.err">Error</p>
+
+	<p data-ng-show="::!!entry.bunyan.err"><span class="text-danger">{{entry.bunyan.err.name}}:</span> {{entry.bunyan.err.message}}</p>
+
+	<div style="margin-top: 0.5em;" class="cursor-pointer" data-ng-show="::entry.bunyan.err.stack" ng-click="showStackTrace = !showStackTrace;">
+		<i class="fa fa-fw" ng-class="{'fa-caret-right': !showStackTrace, 'fa-caret-down': !!showStackTrace}"></i>Stack trace
+	</div>
+	<pre style="margin-left: 20px; line-height: 1.3;" ng-show="!!showStackTrace">{{::entry.bunyan.err.stack}}</pre>
+
+	<div ng-show="::!!entry.bunyan.req">
+		<h4>Web request</h4>
+		<p>{{entry.bunyan.req.method}} {{entry.bunyan.req.url}}</p>
+
+		<dl class="dl-horizontal">
+			<dt>Client</dt>
+			<dd>{{entry.bunyan.req.remoteAddress}}</dd>
+			<dt>Request ID</dt>
+			<dd>{{entry.bunyan.id}}</dd>
+		</dl>
+
+		<table style="margin-left: 30px;" class="table table-condensed">
+			<thead>
+				<tr><th>Header</th><th>Value</th></tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="(key, value) in entry.req.headers"><td style="white-space: nowrap;">{{key}}</td><td>{{value}}</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<p class="small-header" ng-show="::custom">Custom fields</p>
+
+	<dl class="dl-horizontal">
+		<dt ng-repeat-start="(key, value) in custom">{{key}}</dt>
+		<dd ng-repeat-end>{{value}}</dd>
+	</dl>
+
+	<p class="small-header">Technical Info</p>
+
+	<dl class="dl-horizontal">
+		<dt>Process ID</dt>
+		<dd>{{entry.bunyan.pid}}</dd>
+		<dt>Reporting IP</dt>
+		<dd>{{entry.log.reportingIp}}</dd>
+		<dt>Receiving Port</dt>
+		<dd>{{entry.log.receivingPort}}</dd>
+	</dl>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{$resolve.bunyanEntry | json}}</pre>
+</div>

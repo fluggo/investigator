@@ -1,0 +1,49 @@
+<h1 class="top">Domain operations masters</h1>
+
+<div class="container">
+
+	<h1>Domain operations masters</h1>
+
+	<p>This page identifies the current operations masters in each domain.
+		See <a href="https://technet.microsoft.com/en-us/library/cc779716(v=ws.10).aspx">this TechNet article<i class="fa fa-fw2 fa-external-link"></i></a> for more information.</p>
+
+	<table class="table table-condensed table-striped" style="table-layout: fixed;">
+		<thead>
+			<th>Domain</th>
+			<th>Primary</th>
+			<th>Infrastructure</th>
+			<th>RID</th>
+			<th>Forest domain naming master</th>
+			<th>Forest schema master</th>
+		</thead>
+		<tbody>
+			<tr ng-repeat="domain in typemap2">
+				<td>{{domain.key}}</td>
+				<td><ldap-object-link ng-if="::!!domain.value.get('domainDNS')" distinguished-name="domain.value.get('domainDNS').serverReference"></ldap-object-link></td>
+				<td><ldap-object-link ng-if="::!!domain.value.get('infrastructureUpdate')" distinguished-name="domain.value.get('infrastructureUpdate').serverReference"></ldap-object-link></td>
+				<td><ldap-object-link ng-if="::!!domain.value.get('rIDManager')" distinguished-name="domain.value.get('rIDManager').serverReference"></ldap-object-link></td>
+				<td><ldap-object-link ng-if="::!!domain.value.get('crossRefContainer')" distinguished-name="domain.value.get('crossRefContainer').serverReference"></ldap-object-link></td>
+				<td><ldap-object-link ng-if="::!!domain.value.get('dMD')" distinguished-name="domain.value.get('dMD').serverReference"></ldap-object-link></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<p>The primary domain controller keeps latest password information, is the preferred point of administration for Group Policy, and
+						performs all directory writes. The forest root PDC is the default Windows Time service source.</p>
+
+					<p>The PDC will receive logon requests from other domain controllers for <strong>incorrect passwords</strong>, with the expectation
+						that the PDC will have the most up-to-date password information.</p>
+				</td>
+				<td><p>Keeps all object references up-to-date.</p></td>
+				<td><p>Allocates blocks of RIDs (the last number in a SID) to domain controllers.</p></td>
+				<td><p>Responsible for application directory partitions and connections to other domains.</p></td>
+				<td><p>Responsible for changes to the schema across all domains.</p></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{reportData | json}}</pre>
+</div>

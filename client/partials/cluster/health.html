@@ -1,0 +1,13 @@
+<div class="container-fluid">
+	<p><a href="cluster/">Back to cluster</a></p>
+
+	<div class="progress">
+		<div class="progress-bar" role="progressbar" aria-valuenow="{{healthObj.active_shards_percent_as_number}}" aria-valuemin="0" aria-valuemax="100" ng-style="{width: healthObj.active_shards_percent_as_number + '%'}">
+			{{healthObj.active_shards_percent_as_number | d3number:".1f"}}
+		</div>
+		<div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{100 - healthObj.active_shards_percent_as_number}}" aria-valuemin="0" aria-valuemax="100" ng-style="{width: (100 - healthObj.active_shards_percent_as_number) + '%'}">
+		</div>
+	</div>
+
+	<pre>{{healthObj | json}}</pre>
+</div>

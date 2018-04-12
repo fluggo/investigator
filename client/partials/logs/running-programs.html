@@ -1,0 +1,39 @@
+<div class="container">
+	<h1>Running Programs</h1>
+
+	<p>This page lists all programs that report their status using <code>Fluent.EnableProcessMonitoring()</code>.</p>
+
+	<table class="table table-condensed">
+		<thead>
+			<tr><th style="width: 20px;"></th><th>Program</th><th>User</th><th>Status</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat-start="hostEntry in hosts">
+				<td colspan="4"><strong>{{::hostEntry.key}}</strong></td>
+			</tr>
+			<tr ng-repeat-end ng-repeat="status in hostEntry.values">
+				<td></td>
+				<td>
+					<div style="font-size: 115%;">{{::status.status.program}}</div>
+					<ul class="list-unstyled">
+						<li>Version {{::status.status.processVersion}} (built {{::status.status.processBuildTime | d3date:"%a, %b %-d, %Y %-H:%M"}})</li>
+						<li>Started {{status.status.processStartTime | d3ago}}</li>
+						<li>Process ID {{::status.status.processId}}</li>
+						<li ng-show="::!!status.status.processPath"><a ng-show="!status.showPath" ng-click="status.showPath = true;">Show Path</a><code ng-show="status.showPath">{{::status.status.processPath}}</code></li>
+					</ul>
+				</td>
+				<td>{{status.log.source.samName}}</td>
+				<td>
+						<span ng-if="::!!status.status.status">{{::status.status.status}}</span>
+							<span ng-if="::!status.status.status">
+								<span ng-switch="status.status.processStatus">
+									<span ng-switch-when="running">Running</span>
+									<span ng-switch-default>{{status.status.processStatus}}</span>
+								</span>
+							</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+</div>

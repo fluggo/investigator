@@ -1,0 +1,21 @@
+<h1 class="top">Create new user</h1>
+
+<div class="container">
+	<p><a href="users/">Back to users</a></p>
+
+	<h1>Create new user</h1>
+
+	<form role="form" name="editForm">
+		<div class="form-group">
+			<label for="upn">User principal name</label>
+			<input ng-model="upn" ng-disabled="saving" required type="email" class="form-control" id="upn" placeholder="User@DOMAIN.COM">
+		</div>
+
+		<div class="text-right">
+			<button class="btn btn-primary" ng-disabled="saving" ng-click="saveUser()">
+				<i ng-hide="saving" class="fa fa-fw fa-save"></i>
+				<i ng-show="saving" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+				Save</button>
+		</div>
+	</form>
+</div>

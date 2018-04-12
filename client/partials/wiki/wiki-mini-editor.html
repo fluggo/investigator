@@ -1,0 +1,78 @@
+<form name="$ctrl.wikiEditForm">
+	<p ng-show="!$ctrl.article">This object has no wiki article. Would you like to create one?</p>
+
+	<div class="panel panel-default">
+		<div class="panel-body">
+			<ul class="list-inline">
+				<li ng-show="!$ctrl.editing && $ctrl.rootScope.settings.userControls.wiki.edit"><a ng-click="$ctrl.editing = true;"><i class="fa fa-fw fa-edit"></i>Edit</a></li>
+				<li ng-show="$ctrl.articleRawId"><a href="wiki/article/{{$ctrl.encodeURIComponent($ctrl.articleRawId)}}">Go to article</a></li>
+				<li ng-show="$ctrl.hasUnreviewed"><i class="fa fa-exclamation-triangle"></i> This article is waiting for review.</li>
+			</ul>
+
+			<h3 style="margin-top: 0px;" ng-show="!$ctrl.editing">{{wiki.article.title}}</h3>
+
+			<input ng-show="$ctrl.editing" ng-required style="color: #444444; height: 30px; margin-bottom: 1em;" type="text" class="form-control input-lg;" placeholder="Title" ng-readonly="!$ctrl.rootScope.settings.userControls.wiki.edit" ng-model="$ctrl.editedArticle.title">
+
+			<div class="row" style="margin-bottom: 1em;">
+				<div ng-show="$ctrl.editing" class="col-sm-6">
+					<div><small class="text-uppercase"><strong>Body</strong></small></div>
+					<textarea ng-readonly="!$ctrl.rootScope.settings.userControls.wiki.edit" class="form-control input-sm" style="font-family: monospace; line-height: 1.2;" ng-model="$ctrl.editedArticle.body" cols="60" rows="10"></textarea>
+				</div>
+				<div ng-class="[$ctrl.editing ? 'col-sm-6' : 'col-xs-12']">
+					<div ng-show="$ctrl.editing"><small class="text-uppercase"><strong>Preview</strong></small></div>
+					<div wiki-textile="$ctrl.editedArticle.body"></div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-xs-12">
+					<div><small class="text-uppercase"><strong>Tags</strong></small></div>
+					<wiki-tag-editor readonly="!$ctrl.rootScope.settings.userControls.wiki.edit" tags="$ctrl.editedArticle.tags" on-change="$ctrl.editedArticle.tags = tags; $ctrl.updateCheckedTags()"></wiki-tag-editor>
+					<!--<textarea ng-readonly="!$ctrl.rootScope.settings.userControls.wiki.edit" class="form-control input-sm" style="font-family: monospace; line-height: 1.2;" ng-model="$ctrl.editedArticle.tags" ng-change="$ctrl.updateCheckedTags()" cols="60" rows="3"></textarea>-->
+				</div>
+			</div>
+
+			<div class="row" style="margin-top: 1em;" ng-show="$ctrl.hasRecommendations || $ctrl.editing">
+				<div class="col-sm-6">
+					<div><small class="text-uppercase"><strong>Required tags</strong></small></div>
+					<div ng-repeat="change in $ctrl.changes.require">
+						<label style="cursor: pointer" ng-class="{'text-success': $ctrl.article && change.action === 'add', 'text-danger': $ctrl.article && change.action === 'remove'}"><input type="checkbox" ng-disabled="change.checked || !$ctrl.rootScope.settings.userControls.wiki.edit" ng-model="change.checked" ng-style="{visibility: change.action === 'keep' ? 'hidden' : 'visible'}" ng-click="$ctrl.updateEditedTags()"> {{change.tag}}</label>
+					</div>
+
+					<div style="margin-top: 1em;"><small class="text-uppercase"><strong>Recommended tags</strong></small></div>
+					<div ng-repeat="change in $ctrl.changes.recommend">
+						<label style="cursor: pointer" ng-class="{'text-success': $ctrl.article && change.action === 'add', 'text-danger': $ctrl.article && change.action === 'remove'}"><input type="checkbox" ng-disabled="!$ctrl.rootScope.settings.userControls.wiki.edit" ng-model="change.checked" ng-click="$ctrl.updateEditedTags()"> {{change.tag}}</label>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div><small class="text-uppercase"><strong>Suggested tags</strong></small></div>
+					<p ng-show="!$ctrl.changes.suggest.length">No suggestions.</p>
+					<div ng-repeat="change in $ctrl.changes.suggest">
+						<label style="cursor: pointer" ng-class="{'text-success': $ctrl.article && change.action === 'add', 'text-danger': $ctrl.article && change.action === 'remove'}"><input type="checkbox" ng-disabled="!$ctrl.rootScope.settings.userControls.wiki.edit" ng-model="change.checked" ng-click="$ctrl.updateEditedTags()"> {{change.tag}}</label>
+					</div>
+
+					<div ng-show="$ctrl.changes.possibilities.length" style="margin-top: 1em;"><small class="text-uppercase"><strong>Possibilities</strong></small></div>
+					<div ng-repeat="change in $ctrl.changes.possibilities">
+						<label style="cursor: pointer"><input type="checkbox" ng-disabled="!$ctrl.rootScope.settings.userControls.wiki.edit" ng-model="change.checked" ng-click="$ctrl.updateEditedTags()"> {{change.tag}}</label>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="text-right" ng-show="$ctrl.rootScope.settings.userControls.wiki.edit && (!$ctrl.wikiEditForm.$pristine || $ctrl.editing)">
+				<button type="button" class="btn btn-sm btn-default" ng-show="!!$ctrl.article" ng-click="$ctrl.cancelEdit()">
+					Cancel
+				</button>
+				<button type="button" class="btn btn-sm btn-primary" ng-disabled="$ctrl.saving || !$ctrl.hasRequiredTags || $ctrl.wikiEditForm.$invalid || ($ctrl.wikiEditForm.$pristine && !!$ctrl.article)" ng-click="$ctrl.saveArticle()">
+					<span ng-show="!$ctrl.saving">{{$ctrl.article ? 'Save' : 'Create'}}</span><span ng-show="$ctrl.saving"><i class="fa fa-circle-o-notch fa-spin"></i> Saving...</span>
+				</button>
+			</div>
+
+			<div class="text-right" ng-show="!!$ctrl.article && $ctrl.wikiEditForm.$pristine && !$ctrl.editing && $ctrl.hasRecommendations">
+				<button type="button" class="btn btn-sm btn-primary" ng-disabled="$ctrl.saving || !$ctrl.hasRequiredTags || $ctrl.wikiEditForm.$invalid" ng-click="$ctrl.applyRecommendations()">
+					<span ng-show="!$ctrl.saving">Apply all recommendations</span><span ng-show="$ctrl.saving"><i class="fa fa-circle-o-notch fa-spin"></i> Saving...</span>
+				</button>
+			</div>
+		</div>
+	</div>
+</form>

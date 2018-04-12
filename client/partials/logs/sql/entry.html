@@ -1,0 +1,71 @@
+<h1 class="top">SQL log</h1>
+
+<div class="container">
+	<p><a href="logs/sql/search">Back to search</a></p>
+
+	<div class="clearfix">
+		<span class="pull-right" style="margin-left: 10px;">
+			{{::entry.sql.DatabaseName}}
+			on
+			{{::entry.sql.ServerName}}
+		</span>
+
+		<span ng-show="::entry.log.tags.indexOf('ddl') !== -1" class="label label-success">DDL</span>
+		<span ng-show="::entry.sql.EventType === 'USER_ERROR_MESSAGE'">
+			<span ng-switch="::entry.sql.Severity">
+				<span ng-switch-default class="label label-info">Message</span>
+				<span ng-switch-when="11" class="label label-warning">User Error</span>
+				<span ng-switch-when="12" class="label label-warning">Lock Warning</span>
+				<span ng-switch-when="13" class="label label-warning">Deadlock</span>
+				<span ng-switch-when="14" class="label label-danger">Security Error</span>
+				<span ng-switch-when="15" class="label label-warning">Syntax Error</span>
+				<span ng-switch-when="16" class="label label-warning">User Error</span>
+				<span ng-switch-when="17" class="label label-danger">Resource Error</span>
+				<span ng-switch-when="18" class="label label-warning">Internal Error</span>
+				<span ng-switch-when="19" class="label label-warning">Engine Limit</span>
+				<span ng-switch-when="20" class="label label-danger">Fatal Process Error</span>
+				<span ng-switch-when="21" class="label label-danger">Fatal Database Error</span>
+				<span ng-switch-when="22" class="label label-danger">Table Damage</span>
+				<span ng-switch-when="23" class="label label-danger">Database Damage</span>
+				<span ng-switch-when="24" class="label label-danger">Media Failure</span>
+			</span>
+		</span>
+
+		<span ng-show="::entry.sql.EventType !== 'USER_ERROR_MESSAGE'">
+			{{::entry.sql.EventType}}
+		</span>
+
+		<span class="text-danger" ng-show="::entry.sql.EventType === 'USER_ERROR_MESSAGE'">
+			<span>Msg {{entry.sql.Error}}</span>,
+			<span>Level {{entry.sql.Severity}}</span>,
+			<span>State {{entry.sql.State}}</span>
+		</span>
+
+		<span ng-show="::!!entry.sql.ObjectName"><span ng-show="!!entry.sql.SchemaName">{{::entry.sql.SchemaName}}.</span>{{::entry.sql.ObjectName}}</span>
+
+		<span ng-show="::!!entry.sql.AlterTableActionList">{{::entry.sql.AlterTableActionList}}</span>
+
+		<div ng-show="::!!entry.sql.TextData && entry.sql.EventType !== 'DEADLOCK_GRAPH'" style="margin-left: 1em; margin-top: 0.25em;">{{::entry.sql.TextData}}</div>
+
+		<div class="clearfix"></div>
+
+		<div style="margin-top: 0.5em; font-size: 85%;" class="pull-right text-muted">
+			<span ng-if="::!!entry.sql.ApplicationName">{{::entry.sql.ApplicationName}} ({{::entry.sql.LoginName}})</span>
+			<span ng-show="::!entry.sql.ApplicationName">{{::entry.sql.LoginName}}</span>
+			<span ng-show="::!!entry.sql.HostName">from {{::entry.sql.HostName}}</span>
+			<span title="{{::entry.log.entryTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{::entry.log.entryTime | d3todaydate:"on %A %Y-%m-%d at %-I:%M %p|at %-I:%M:%S %p today"}}</span>
+		</div>
+
+	</div>
+
+	<div ng-show="::!!entry.sql.TSQLCommand">
+		<h3>TSQL Command</h3>
+		<pre style="margin-left: 20px; tab-size: 4;">{{::entry.sql.TSQLCommand}}</pre>
+	</div>
+
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{$resolve.sqlEntry | json}}</pre>
+</div>

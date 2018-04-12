@@ -1,0 +1,162 @@
+<h1 class="top">Cylance device</h1>
+
+<div class="container hidden-print-link">
+	<p><a href="cylance/device/search">Back to search</a></p>
+	<h1>{{::device.name}} <small><span ng-show="::!device.online" class="label label-default">Offline</span></small></h1>
+
+	<p><a href="https://sample.cylance.com/Device/DeviceDetails/{{::device.serialNumber}}">View in Cylance<i class="fa fa-fw2 fa-external-link"></i></a></p>
+
+	<div class="row">
+		<div class="col-xs-6">
+			<dl class="dl-horizontal">
+				<dt>Operating system</dt>
+				<dd>{{::device.os}}</dd>
+
+				<dt>Last user</dt>
+				<dd>
+					<span ng-show="::device.lastReportedUser && device.lastReportedUser.length"><span ng-repeat="user in device.lastReportedUser">{{::user}}<span ng-show="::!$last">, </span></span></span>
+					<span ng-show="::!(device.lastReportedUser && device.lastReportedUser.length)">(unknown)</span>
+				</dd>
+
+				<dt ng-show="::device.ip && device.ip.length">IP</dt>
+				<dd ng-show="::device.ip && device.ip.length"><span ng-repeat="ip in device.ip">{{::ip}}<span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::device.mac && device.mac.length">MAC</dt>
+				<dd ng-show="::device.mac && device.mac.length"><span ng-repeat="mac in device.mac">{{::mac}}<span ng-show="::!$last">, </span></span></dd>
+
+				<dt ng-show="::device.online">Online since</dt>
+				<dd ng-show="::device.online" title="{{::device.onlineDate | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::device.onlineDate | d3ago}}</dd>
+				<dt ng-show="::!device.online">Offline since</dt>
+				<dd ng-show="::!device.online" title="{{::device.offlineDate | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::device.offlineDate | d3ago}}</dd>
+			</dl>
+		</div>
+		<div class="col-xs-6">
+			<dl class="dl-horizontal">
+
+				<dt>Agent version</dt>
+				<dd>{{::device.agentVersion}}</dd>
+				<dt>Policy</dt>
+				<dd>{{::device.policy}}</dd>
+				<dt ng-show="::device.zones && device.zones.length">Zones</dt>
+				<dd ng-show="::device.zones && device.zones.length"><span ng-repeat="zone in device.zones">{{::zone}}<span ng-show="::!$last">, </span></span></dd>
+				<dt>Background detection</dt>
+				<dd>{{::device.backgroundDetection ? 'Enabled' : 'Disabled'}}</dd>
+			</dl>
+		</div>
+	</div>
+
+	<h2>Threats</h2>
+
+	<table ng-show="::!!device.threats" class="table table-condensed">
+		<thead>
+			<tr>
+				<th>File name</th>
+				<th>Cylance score</th>
+				<th>File owner</th>
+				<th>Classification</th>
+				<th>Detected by</th>
+				<th>First seen</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat-start="threat in device.threats">
+				<td class="cursor-pointer" data-ng-click="threat.showDetails = !threat.showDetails;">
+					<i class="fa fa-fw" data-ng-class="[threat.showDetails ? 'fa-caret-down' : 'fa-caret-right']"></i>
+					{{::threat.fileName}}
+					<span ng-show="::threat.safelisted" class="label label-primary">Safelisted</span>
+					<span ng-show="::threat.globalQuarantined" class="label label-default">Global quarantined</span>
+					<span ng-show="::threat.autoRun" class="label label-warning">Autorun</span>
+				</td>
+				<td>{{::threat.cylanceScore}}</td>
+				<td>{{::threat.fileOwner}}</td>
+				<td>{{::threat.classification}}</td>
+				<td>{{::threat.detectedBy}}</td>
+				<td title="{{::threat.firstFound | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::threat.firstFound | d3ago}}</td>
+			</tr>
+			<tr ng-show="threat.showDetails" ng-repeat-end>
+				<td colspan="6">
+					<dl class="dl-horizontal">
+						<dt>Links</dt>
+						<dd>
+							<a href="https://sample.cylance.com/Threats/ThreatDetails/{{::threat.sha256}}">Cylance<i class="fa fa-fw2 fa-external-link"></i></a>
+							<a href="https://www.virustotal.com/en/file/{{::threat.sha256}}/analysis/">VirusTotal<i class="fa fa-fw2 fa-external-link"></i></a></dd>
+						<dt>SHA256</dt>
+						<dd>{{::threat.sha256}}</dd>
+						<dt>MD5</dt>
+						<dd>{{::threat.md5}}</dd>
+						<dt>Path</dt>
+						<dd>{{::threat.filePath}} ({{::threat.driveType}})</dd>
+						<dt>File size</dt>
+						<dd title="{{::threat.fileSize}}">{{::threat.fileSize | bytes}}</dd>
+						<dt>Created</dt>
+						<dd title="{{::threat.createdTime | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::threat.createdTime | d3ago}}</dd>
+						<dt>Modified</dt>
+						<dd title="{{::threat.modifiedTime | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::threat.modifiedTime | d3ago}}</dd>
+						<dt>Last seen</dt>
+						<dd title="{{::threat.lastFound | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::threat.lastFound | d3ago}}</dd>
+					</dl>
+
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p ng-show="::!device.threats">No threats currently known.</p>
+
+	<h2>Events</h2>
+
+	<table ng-show="::!!device.events" class="table table-condensed">
+		<thead>
+			<tr>
+				<th>File</th>
+				<th>Cylance score</th>
+				<th>Event status</th>
+				<th>Detected by</th>
+				<th>Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat-start="event in device.events">
+				<td class="cursor-pointer" data-ng-click="event.showDetails = !event.showDetails;">
+					<i class="fa fa-fw" data-ng-class="[event.showDetails ? 'fa-caret-down' : 'fa-caret-right']"></i>
+					{{::event.fileName}}
+					<span ng-show="::event.running" class="label label-warning">Running</span>
+					<span ng-show="::!event.running && event.everRun" class="label label-warning">Ran</span>
+				</td>
+				<td>{{::event.cylanceScore}}</td>
+				<td>
+					<span ng-switch="event.eventStatus">
+						<span ng-switch-when="quarantined" class="label label-success">Quarantined</span>
+						<span ng-switch-when="unsafe" class="label label-danger">Unsafe</span>
+						<span ng-switch-when="abnormal" class="label label-warning">Abnormal</span>
+						<span ng-switch-default>{{event.eventStatus}}</span>
+					</span>
+				</td>
+				<td>{{::event.detectedBy}}</td>
+				<td title="{{::event.timestamp | d3date:'%a %b %-d %Y %H:%M:%S %Z'}}">{{::event.timestamp | d3ago}}</td>
+			</tr>
+			<tr ng-show="event.showDetails" ng-repeat-end>
+				<td colspan="6">
+					<dl class="dl-horizontal">
+						<dt>Links</dt>
+						<dd>
+							<a href="https://www.virustotal.com/en/file/{{::event.sha256}}/analysis/">VirusTotal<i class="fa fa-fw2 fa-external-link"></i></a></dd>
+						<dt>SHA256</dt>
+						<dd>{{::event.sha256}}</dd>
+						<dt>MD5</dt>
+						<dd>{{::event.md5}}</dd>
+						<dt>Path</dt>
+						<dd>{{::event.filePath}}</dd>
+					</dl>
+
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p ng-show="::!device.events">Cylance reported no recent events.</p>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{device | json}}</pre>
+</div>

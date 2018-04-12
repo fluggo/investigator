@@ -1,0 +1,66 @@
+<h1 class="top"><i class="fa fa-chain"></i> Wiki update</h1>
+
+<div class="container">
+	<p>Use this page to update wiki articles from outside sources such as LDAP. Search for LDAP or wiki entries.</p>
+
+	<form name="searchForm" role="form" ng-submit="commitSearch({forceRefresh: true});">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+		<div class="form-group">
+			<label style="cursor: pointer"><input type="checkbox" ng-model="shadowShowSuggestions" /> Show suggestions</label>
+		</div>
+		<div class="form-group">
+			<button class="btn btn-primary" type="submit">Submit</button>
+		</div>
+	</form>
+
+	<dl class="dl-horizontal" ng-show="!!searchResults || loading">
+		<dt>Objects found</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.length}}</span></dd>
+	</dl>
+
+	<!--<pre>{{entriesLoaded | json}}</pre>-->
+
+	<!--<div ng-repeat="entry in entriesLoaded" ng-init="ldap = entry._source.ldap;" class="list-group">
+		<a href="javascript:void" class="list-group-item active" ng-click="entry.collapsed = !entry.collapsed">
+			<span ng-show="entry.collapsed && entry.saved" class="label label-default pull-right">Saved</span>
+			<h4 class="list-group-item-heading">{{::entry.name}}</h4>
+			<p class="list-group-item-text"><span ng-show="ldap.department || ldap.description">{{ldap.department || ldap.description}}</span><span ng-show="(ldap.department || ldap.description) && ldap.company">, </span><span ng-show="ldap.company">{{ldap.company}}</span></p>
+		</a>
+		<div ng-hide="entry.collapsed" class="list-group-item">-->
+
+
+	<div ng-repeat="entry in entriesLoaded" ng-if="entry.display && !entry.loading" class="panel" ng-class="[entry.error ? 'panel-danger' : 'panel-primary']">
+		<div class="panel-heading cursor-pointer" ng-click="entry.open = !entry.open">
+			<i ng-show="entry.loading" class="fa fa-spin fa-circle-o-notch"></i>
+			<span ng-show="!entry.open && entry.saved" class="label label-default pull-right">Saved</span>
+			<h4 class="panel-title"><i class="fa" ng-show="!!entry.objectType" ng-class="[entry.objectType.icon]"></i> {{entry.name}} <small ng-show="entry.id.type === 'ldap-guid' && !!entry.objectType">{{entry.objectType.name}}</small></h4>
+			<div ng-show="entry.id.type === 'ldap-guid'"><span ng-show="entry.alternatives[0].ldap._source.ldap.department || entry.alternatives[0].ldap._source.ldap.description">{{entry.alternatives[0].ldap._source.ldap.department || entry.alternatives[0].ldap._source.ldap.description}}</span><span ng-show="(entry.alternatives[0].ldap._source.ldap.department || entry.alternatives[0].ldap._source.ldap.description) && entry.alternatives[0].ldap._source.ldap.company">, </span><span ng-show="entry.alternatives[0].ldap._source.ldap.company">{{entry.alternatives[0].ldap._source.ldap.company}}</span></div>
+		</div>
+		<div ng-show="!entry.loading && entry.error" class="panel-body">
+			<div class="text-danger">{{entry.error.message}}</div>
+		</div>
+		<div ng-show="!entry.loading && entry.open && !entry.error" class="panel-body">
+			<ul class="list-inline" ng-show="!entry.saved">
+				<li ng-repeat="alt in entry.alternatives" class="radio-inline"><label><input type="radio" ng-value="$index" ng-model="entry.currentIndex" ng-change="entry.setAlternative($index);">{{alt.name}}</label></li>
+			</ul>
+
+			<div ng-if="!!entry.current.ldap">
+				<h4 class="small-header">LDAP: <a href="ldap/object/{{entry.current.ldap._source.ldap.objectGUID}}">{{entry.current.ldap._source.common.name}}</a></h4>
+				<ldap-short-view ldap="entry.current.ldap"></ldap-short-view>
+			</div>
+
+			<!-- Other object types can go here -->
+
+			<wiki-mini-editor ng-if="!!entry.current" article="entry.current.wiki" recommendations="entry.current.recommendations" on-saved="entry.open = false; entry.saved = true;"></wiki-mini-editor>
+
+		</div>
+	</div>
+
+	<p class="text-center" ng-show="!!searchResults">
+		<span ng-show="loadingNext">Checking remaining entries ({{entriesChecked}} of {{searchResults.length}})&hellip;</span>
+		<button ng-hide="loadingNext || (entriesChecked === searchResults.length)" type="button" class="btn btn-sm btn-primary" ng-click="checkNextEntries()">Check next entries ({{searchResults.length - entriesChecked}} remaining)</button>
+		<span style="font-size: 125%;" ng-show="entriesChecked === searchResults.length">No more objects to reconcile.</span>
+	</p>
+</div>

@@ -1,0 +1,59 @@
+{
+  // The hostname clients will use to connect to the server
+  "hostname": "localhost",
+
+  // The port clients will use to connect to the server.
+  // When running directly, this changes which port the server runs on.
+  // When running under Passenger, the server will be hosted
+  "port": 3000,
+
+  // Whether users will connect over HTTPS/WSS (true) or HTTP/WS (false).
+  // This only affects URLs presented to the client; to get secure access, use
+  // a proxy server.
+  "secure": false,
+
+  // Subdirectory at which the site will be hosted
+  "subdir": "/",
+
+  // Subdirectory at which the forms part of the site will be hosted
+  "formsSubdir": "/forms/",
+
+  // If true, disables checking the "Proxy-User" header, useful for when
+  // testing locally
+  "disableSecurity": true,
+
+  // (optional) Path to the client web files, default is 'build/www'
+  //"rootPath": "build/www",
+
+  // Configuration for the Elasticsearch client
+  "elasticsearch": {
+    "hosts": [
+      "http://elasticsearch:9200"
+    ],
+    "apiVersion": "5.2"
+    //"sniffOnStart": true,
+    //"sniffInterval": 60000,
+    //"sniffOnConnectionFault": true
+  },
+
+  // Number of shards per index
+  "number_of_shards": 1,
+
+  // Mail sending configuration
+  "mail": {
+    // Transport options for nodemailer; can be URL or object
+    "transportOptions": "smtp://relay.mymail.net/"
+  },
+
+  // Logging configuration
+  "logging": {
+    // Log as Bunyan JSON stream over TCP
+    "bunyan-tcp": {
+      "server": "mylogger.mydomain.mine",
+      "port": 1234
+    },
+
+    // Log as Bunyan JSON stream to stdout
+    "stdout": {}
+  }
+}

@@ -1,0 +1,37 @@
+<h1 class="top">Wiki search</h1>
+
+<div class="container">
+	<form name="searchForm" role="form" ng-submit="commitSearch({page: 1});">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+	</form>
+
+	<p class="hidden-print" ng-show="searchPerformed"><a ng-click="helpShown = !helpShown"><i class="fa fa-fw2" ng-class="[helpShown ? 'fa-caret-down' : 'fa-caret-right']"></i><i class="fa fa-fw fa-question-circle"></i>Help</a></p>
+
+	<table ng-show="helpShown || !searchPerformed" class="table table-condensed" style="background-color: #f6f6f6;">
+		<tbody>
+			<tr><td class="text-primary">word</td><td>Search for a word or words like it.</td></tr>
+			<tr><td class="text-primary">"this is a phrase"</td><td>Search for a phrase.</td></tr>
+			<tr><td class="text-primary">tag:sql-server</td><td>Search for articles that include the tag or hashtag.</td></tr>
+			<tr><td class="text-primary">+tag:sql-server -tag:user</td><td>Add <span class="text-primary">+</span> to require a tag/term, or <span class="text-primary">-</span> to remove it.</td></tr>
+			<tr><td class="text-primary">#sql-server</td><td>Search for articles with the tag in the article.</td></tr>
+			<tr><td class="text-primary">mac:2c27d721dbb6</td><td>Search for a tag with a given value.</td></tr>
+		</tbody>
+	</table>
+
+	<dl class="dl-horizontal">
+		<dt>Total hits</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.hits.total}}</span></dd>
+	</dl>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<div ng-repeat="hit in searchResults.hits.hits">
+		<div style="font-size: 110%;"><a href="wiki/article/{{encodeURIComponent(hit._id)}}" search-highlighter="hit.highlight['wikiUnreviewed.title'][0] || hit._source.wikiUnreviewed.title"></a> <span ng-show="hit._source.wiki.unreviewed" class="label label-warning">Needs review</span></div>
+		<p ng-show="!!hit.highlight['wikiUnreviewed.body'][0]" search-highlighter="hit.highlight['wikiUnreviewed.body'][0]"></p>
+		<p ng-show="!hit.highlight['wikiUnreviewed.body'][0]" wiki-textile="hit.summary" single-para="true"></p>
+	</div>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+</div>

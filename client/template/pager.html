@@ -1,0 +1,13 @@
+<ul class="pagination pagination-sm" ng-show="$ctrl.pageCount > 1">
+	<li ng-class="{disabled: $ctrl.page === 1}">
+		<a aria-label="Previous" ng-click="$ctrl.changePage({page: $ctrl.page - 1});">
+			<span aria-hidden="true">&laquo;</span>
+		</a>
+	</li>
+	<li ng-class="{active: $ctrl.page === pageLink}" ng-repeat="pageLink in $ctrl.pageList"><a ng-click="$ctrl.changePage({page: pageLink});">{{pageLink}}</a></li>
+	<li ng-class="{disabled: $ctrl.page === $ctrl.pageCount}">
+		<a aria-label="Next" ng-click="$ctrl.changePage({page: $ctrl.page + 1});">
+			<span aria-hidden="true">&raquo;</span>
+		</a>
+	</li>
+</ul>

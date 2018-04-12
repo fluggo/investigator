@@ -1,0 +1,35 @@
+<div class="container">
+	<h1>Windows event log stats</h1>
+
+	<table class="table table-condensed table-striped">
+		<thead>
+			<tr>
+				<th>Computer<br>&nbsp;</th>
+				<th>Event count (approx)<br><span class="text-muted">Last 24 hours</span></th>
+				<th>First event date<br>&nbsp;</th>
+				<th>Last received time<br>&nbsp;</th>
+				<th>Average events per second<br>&nbsp;</th>
+			</tr>
+			<tr>
+				<td>Total</td>
+				<td>{{::totalCount}}<br><span class="text-muted">{{::lastDayCount}}</span></td>
+				<td></td>
+				<td></td>
+				<td>{{::lastRow.eventsPerSecond24h | d3number:".2f"}}</span></td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="computer in stats">
+				<td><a href="logs/msvista/search?q={{::encodeURIComponent('+computer:' + computer.name)}}">{{::computer.name}}<i class="fa fa-fw2 fa-search"></i></a></td>
+				<td><span ng-show="::!!computer.sampled">{{::totalCount * computer.sampled.count / statsTotalCount | d3number:"d"}} ({{::computer.sampled.count / statsTotalCount | d3number:".1%"}})</span><br><span class="text-muted">{{::computer.lastDay.count}}</span></td>
+				<td>{{computer.sampled.minEventTime | d3date:"%Y-%m-%d"}}</td>
+				<td>{{computer.lastDay.maxReceivedTime | d3ago}}</td>
+				<td><span ng-show="::computer.lastDay.eventsPerSecond">{{::computer.lastDay.eventsPerSecond | d3number:".2f"}}</span></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p><a ng-click="showRawJson = !showRawJson"><i class="fa fa-fw" ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i> Show raw JSON</a></p>
+
+	<pre ng-show="showRawJson">{{statsObj | json}}</pre>
+</div>

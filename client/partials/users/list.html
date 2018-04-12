@@ -1,0 +1,11 @@
+<h1 class="top">Users</h1>
+
+<div class="container">
+	<h1><i class="fa fa-users"></i> Users</h1>
+
+	<p ng-show="settings.userControls.editUsers"><a href="users/new-user">Create new user</a></p>
+
+	<ul class="list-unstyled">
+		<li ng-repeat="user in users"><a href="users/{{::encodeURIComponent(user._id)}}"><i class="fa fa-user"></i> {{user._id}}</a></li>
+	</ul>
+</div>

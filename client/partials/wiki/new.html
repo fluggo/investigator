@@ -1,0 +1,34 @@
+<h1 class="top">New article</h1>
+
+<div class="container-fluid">
+	<form name="editForm">
+		<div class="row">
+			<div class="col-md-3">
+				<div class="form-group">
+					<label>Tags</label>
+					<wiki-tag-editor tags="editedArticle.tags" on-change="editedArticle.tags = tags;"></wiki-tag-editor>
+				</div>
+			</div>
+			<div class="col-md-9">
+				<div class="form-group">
+					<input type="text" class="form-control input-lg" ng-model="editedArticle.title" required placeholder="Title"></input>
+				</div>
+
+				<div class="form-group">
+					<label>Article text</label>
+					<textarea class="form-control input-sm" style="font-family: monospace; line-height: 1.4;" ng-model="editedArticle.body" cols="120" rows="20" required></textarea>
+				</div>
+
+				<div class="text-right">
+					<button class="btn btn-primary" ng-click="saveArticle()"><i class="fa fa-fw fa-save"></i>Save</button>
+				</div>
+
+				<h3>Preview</h3>
+
+				<div class="panel panel-default">
+					<div class="panel-body" wiki-textile="editedArticle.body" wiki-links="wikiLinks"></div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>

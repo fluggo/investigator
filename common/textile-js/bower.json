@@ -1,0 +1,16 @@
+{
+    "name": "textile-js",
+    "version": "2.0.4",
+    "description": "A full-featured JavaScript Textile parser",
+    "main": "lib/textile.js",
+    "author": "Borgar Þorsteinsson",
+    "ignore": [
+        "bin",
+        "coverage",
+        ".nyc_output",
+        "test",
+        "Makefile",
+        "index.js",
+        "package.json"
+    ]
+}

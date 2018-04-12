@@ -1,0 +1,4 @@
+<div ng-repeat="row in $ctrl.lastSearchResults" class="search-result" ng-show="!!$ctrl.lastSearchResults" ng-class="{'highlighted': $ctrl.highlightIndex === $index}" ng-click="$ctrl.commit($index);">
+	<div class="top"><i class="fa fa-fw" ng-class="::[row.icon || 'fa-cube']"></i><span search-highlighter="row.highlight"></span></div>
+	<div class="bottom"><i class="fa fa-fw"></i>{{::row.category}}<i class="fa fa-fw fa-long-arrow-right" ng-show="::row.category && row.typeText"></i>{{::row.title || row.typeText}}<span ng-show="::row.title"> ({{::row.typeText}})</span></div>
+</div>

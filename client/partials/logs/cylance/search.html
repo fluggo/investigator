@@ -1,0 +1,60 @@
+<h1 class="top">Cylance log search</h1>
+
+<div class="container-fluid hidden-print-link">
+	<form name="searchForm" role="form" ng-submit="commitSearch({page: 1});">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search">
+		</div>
+	</form>
+
+	<ul class="hidden-print list-inline">
+		<li><label><input type="checkbox" ng-model="showFullTimes"> Show full timestamps</label></li>
+	</ul>
+
+	<ul class="list-inline hidden-print">
+		<li><a ng-click="helpShown = !helpShown"><i class="fa fa-fw2" ng-class="[helpShown ? 'fa-caret-down' : 'fa-caret-right']"></i><i class="fa fa-fw2 fa-question-circle"></i>Help</a></li>
+		<li><a ng-click="columnSelectorShown = !columnSelectorShown"><i class="fa fa-fw2" ng-class="[columnSelectorShown ? 'fa-caret-down' : 'fa-caret-right']"></i><i class="fa fa-fw2 fa-columns"></i>Columns</a></li>
+	</ul>
+
+	<table ng-show="helpShown || !searchPerformed" class="table table-condensed hidden-print" style="background-color: #f6f6f6;">
+		<tr><td class="text-primary">term</td><td>Search for a term with fuzzy matching. For example, &quot;dbell&quot; could match &quot;dbell&quot;, &quot;dell&quot;, or &quot;dbell2&quot;.</td></tr>
+	</table>
+
+	<div ng-show="columnSelectorShown" class="hidden-print">
+		<form name="columnForm" role="form" ng-submit="updateFromColumnString()">
+			<div class="form-group">
+				<input ng-model="shadowColumnString" class="form-control" type="text" placeholder="Columns">
+			</div>
+		</form>
+
+		<div ng-repeat="category in defaultColumnsForSelection">
+			<p class="small-header">{{category.key}}</p>
+			<p>
+				<span ng-click="columnSet.has(column.name) ? removeColumn(column.name) : addColumn(column.name)" class="cursor-pointer label" ng-class="[columnSet.has(column.name) ? 'label-primary' : (availableColumns.has(column.name) ? 'label-potential-column' : 'label-default') ]" ng-repeat="column in category.values">
+					{{column.displayName}}
+					<i class="fa" ng-class="[columnSet.has(column.name) ? 'fa-minus-circle' : 'fa-plus-circle']"></i>
+				</span>
+			</p>
+		</div>
+	</div>
+
+	<dl class="dl-horizontal">
+		<dt>Total hits</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{totalHits}}</span></dd>
+	</dl>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<p>Shift-click to add a term to the search. Control-click to filter it out on the next search.</p>
+
+	<table class="table table-condensed table-striped table-short-cells red-highlights" ng-class="{'format-log-messages': formatMessages, 'ago-show-full': showFullTimes}" log-table data="searchResults.hits.hits" columns="tableColumns" on-add-term="addTerm(type, term)" on-remove-term="removeTerm(type, term)" on-sort="commitSearch({sortProp: sortProp, sortOrder: sortOrder})" sort-prop="displaySortProp" sort-order="displaySortOrder">
+	</table>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{searchResults | json}}</pre>
+
+</div>

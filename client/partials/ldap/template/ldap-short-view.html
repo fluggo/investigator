@@ -1,0 +1,83 @@
+<p>
+	<span class="label label-danger" ng-show="$ctrl.lastLogonTimestamp < monthAgo">Abandoned account?</span>
+	<span class="label label-danger" ng-show="$ctrl.userAccountControl.passwordDoesNotExpire">Non-expiring password</span>
+	<span class="label label-danger" ng-show="$ctrl.userAccountControl.accountDisabled">Account is disabled</span>
+	<span class="label label-danger" ng-show="$ctrl.userAccountControl.lockedOut">Locked out</span>
+	<span class="label label-warning" ng-show="$ctrl.userAccountControl.passwordNotRequired">Exempt from password complexity requirements</span>
+	<span class="label label-warning" ng-show="$ctrl.userAccountControl.passwordExpired">Password expired</span>
+	<span ng-show="$ctrl.userAccountControl.preauthNotRequired"><span class="label label-danger">Preauthentication is not required</span> (<a href="https://redmondmag.com/Articles/2012/02/01/Understanding-the-Essentials-of-the-Kerberos-Protocol.aspx?p=1">See here for more info</a>) </span>
+	<span class="label label-primary" ng-show="$ctrl.userAccountControl.normalAccount">User account</span>
+	<span class="label label-warning" ng-show="$ctrl.userAccountControl.interdomainTrustAccount">Inter-domain trust account</span>
+	<span class="label label-primary" ng-show="$ctrl.userAccountControl.workstationTrustAccount">Workstation trust account</span>
+	<span class="label label-primary" ng-show="$ctrl.userAccountControl.serverTrustAccount">Server trust account</span>
+	<span class="label label-primary" ng-show="$ctrl.userAccountControl.smartcardRequired">Smartcard required</span>
+	<span class="label label-warning" ng-show="$ctrl.userAccountControl.lockedOut">Password expired</span>
+</p>
+
+<p ng-show="!!$ctrl.ldap.info">{{$ctrl.ldap.info}}</p>
+
+<div class="row">
+	<div class="col-xs-6">
+		<dl class="dl-horizontal">
+			<dt ng-show="!!$ctrl.ldap.operatingSystem">Operating system</dt>
+			<dd ng-show="!!$ctrl.ldap.operatingSystem">{{::$ctrl.ldap.operatingSystem}}</dd>
+			<dt ng-show="!!$ctrl.ldap.dNSHostName">FQDN</dt>
+			<dd ng-show="!!$ctrl.ldap.dNSHostName">{{::$ctrl.ldap.dNSHostName}}</dd>
+			<dt ng-show="!!$ctrl.ldap['msDS-PrincipalName']">SAM account name</dt>
+			<dd ng-show="!!$ctrl.ldap['msDS-PrincipalName']">{{::$ctrl.ldap['msDS-PrincipalName']}}</dd>
+			<dt ng-show="!!$ctrl.ldap.userPrincipalName">User principal name</dt>
+			<dd ng-show="!!$ctrl.ldap.userPrincipalName">{{::$ctrl.ldap.userPrincipalName}}</dd>
+			<dt ng-show="!!$ctrl.ldap.mail">Primary email</dt>
+			<dd ng-show="!!$ctrl.ldap.mail"><a href="mailto:{{::ldap.mail}}">{{::$ctrl.ldap.mail}}</a></dd>
+			<dt ng-show="!!$ctrl.emails">Email addresses</dt>
+			<dd ng-show="!!$ctrl.emails">
+				<span ng-repeat="email in $ctrl.emails"><a href="mailto:{{email}}">{{email}}</a><span ng-show="::!$last">, </span></span></dd>
+			<dt ng-show="!!$ctrl.exchangeDelegates">Mailbox delegates</dt>
+			<dd ng-show="!!$ctrl.exchangeDelegates">
+				<ul class="list-inline">
+					<li ng-repeat="dn in $ctrl.exchangeDelegates"><ldap-object-link distinguished-name="dn"></ldap-object-link></li>
+				</ul>
+			</dd>
+			<dt ng-show="!!$ctrl.ldap.altRecipient">Mail forwards to</dt>
+			<dd ng-show="!!$ctrl.ldap.altRecipient"><ldap-object-link distinguished-name="$ctrl.ldap.altRecipient"></ldap-object-link></dd>
+		</dl>
+	</div>
+	<div class="col-xs-6">
+		<dl class="dl-horizontal">
+			<dt ng-show="!!$ctrl.ldap.description && ($ctrl.ldap.description !== $ctrl.ldap.company)">Description</dt>
+			<dd ng-show="!!$ctrl.ldap.description && ($ctrl.ldap.description !== $ctrl.ldap.company)">{{::$ctrl.ldap.description}}</dd>
+			<dt ng-show="!!$ctrl.ldap.company">Company</dt>
+			<dd ng-show="!!$ctrl.ldap.company">{{::$ctrl.ldap.company}}</dd>
+			<dt ng-show="!!$ctrl.ldap.department">Department</dt>
+			<dd ng-show="!!$ctrl.ldap.department">{{::$ctrl.ldap.department}}</dd>
+			<dt ng-show="!!$ctrl.ldap.telephoneNumber">Phone number</dt>
+			<dd ng-show="!!$ctrl.ldap.telephoneNumber">{{::$ctrl.ldap.telephoneNumber}}</dd>
+			<dt ng-show="!!$ctrl.ldap.mobile">Mobile phone number</dt>
+			<dd ng-show="!!$ctrl.ldap.mobile">{{::$ctrl.ldap.mobile}}</dd>
+		</dl>
+	</div>
+</div>
+
+<dl class="dl-horizontal">
+	<dt>Distinguished name</dt>
+	<dd>{{$ctrl.ldap.distinguishedName}}</dd>
+	<dt ng-show="!!$ctrl.memberOf">Member of</dt>
+	<dd ng-show="!!$ctrl.memberOf">
+		<p class="text-warning">Does not show groups from other domains yet.</p>
+		<ul class="list-inline">
+			<li ng-repeat="dn in $ctrl.memberOf"><ldap-object-link distinguished-name="dn"></ldap-object-link></li>
+		</ul>
+	</dd>
+	<dt ng-show="!!$ctrl.member">Members</dt>
+	<dd ng-show="!!$ctrl.member">
+		<ul class="list-inline">
+			<li ng-repeat="dn in $ctrl.member"><ldap-object-link distinguished-name="dn"></ldap-object-link></li>
+		</ul>
+	</dd>
+	<dt>Created</dt>
+	<dd title="{{$ctrl.whenCreated | d3date:'%a %b %-d %Y %H:%M:%S'}}">{{$ctrl.whenCreated | d3ago}}</dd>
+	<dt ng-show="!!$ctrl.lastLogonTimestamp">Last logon (<a href="http://blogs.technet.com/b/askds/archive/2009/04/15/the-lastlogontimestamp-attribute-what-it-was-designed-for-and-how-it-works.aspx">-ish</a>)</dt>
+	<dd title="{{$ctrl.lastLogonTimestamp | d3date:'%a %b %-d %Y %H:%M:%S'}}" ng-show="!!$ctrl.lastLogonTimestamp">{{$ctrl.lastLogonTimestamp | d3ago}}</dd>
+	<dt ng-show="!!$ctrl.pwdLastSet">Password last set</dt>
+	<dd title="{{$ctrl.pwdLastSet | d3date:'%a %b %-d %Y %H:%M:%S'}}" ng-show="!!$ctrl.pwdLastSet">{{$ctrl.pwdLastSet | d3ago}}</dd>
+</dl>

@@ -1,0 +1,24 @@
+<div class="container hidden-print-link">
+	<h1>Duplicate tags</h1>
+
+	<p>This report shows all duplicate values for tags marked <a href="wiki/article/unique-tag"><code>unique-tag</code></a>.</p>
+
+	<div ng-repeat="tag in tagList">
+		<h2><a href="wiki/article/{{encodeURIComponent(tag.tag)}}">{{tag.tag}}</a></h2>
+
+		<table class="table table-condensed" style="table-layout: fixed;">
+			<thead>
+				<tr>
+					<th>Value</th><th>Articles</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="key in tag.keys">
+					<td>{{key.key}}</a></td>
+					<td><span ng-repeat="doc in key.docs"><a href="wiki/article/{{encodeURIComponent(doc._id)}}">{{doc._source.wiki.title}}</a><span ng-show="!$last">, </span></span></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+</div>

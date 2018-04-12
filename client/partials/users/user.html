@@ -1,0 +1,106 @@
+<h1 class="top">{{user.upn}}</h1>
+
+<div class="container">
+	<p><a href="users/">Back to users</a></p>
+
+	<h1><i class="fa fa-user"></i> {{user.upn}}</h1>
+
+	<p ng-show="settings.userControls.editUsers" class="text-left">
+		<a ng-click="$event.preventDefault(); startDelete();" class="text-danger"><i class="fa fa-fw fa-trash-o"></i>Delete</a>
+	</p>
+
+	<form name="userEditForm" role="form">
+		<div class="row">
+			<div class="col-sm-6">
+				<p class="small-header">General</p>
+
+				<div class="checkbox">
+					<label style="cursor: pointer" title="editUsers"><input ng-disabled="!settings.userControls.editUsers" type="checkbox" ng-model="editedSettings.editUsers"> Edit users and user controls</label>
+					<p class="help-block">Changes whether this user can create, delete, and assign permissions to users.</p>
+				</div>
+
+				<p class="small-header">Wiki</p>
+
+				<div class="checkbox">
+					<label style="cursor: pointer" title="wiki.view"><input ng-disabled="!settings.userControls.editUsers" type="checkbox" ng-model="editedSettings.wiki.view"> View wiki</label>
+				</div>
+				<div class="checkbox">
+					<label style="cursor: pointer" title="wiki.viewHistory"><input ng-disabled="!settings.userControls.editUsers || !editedSettings.wiki.view" type="checkbox" ng-model="editedSettings.wiki.viewHistory"> View article history</label>
+				</div>
+				<div class="ratio">
+					<label>
+						<input type="radio" name="wikiEditRadios" ng-value="false" ng-model="editedSettings.wiki.edit"> Can't edit
+					</label>
+				</div>
+				<div class="ratio">
+					<label>
+						<input type="radio" name="wikiEditRadios" ng-value="'propose'" ng-model="editedSettings.wiki.edit"> Can propose edits
+					</label>
+				</div>
+				<div class="ratio">
+					<label>
+						<input type="radio" name="wikiEditRadios" ng-value="true" ng-model="editedSettings.wiki.edit"> Can edit and accept proposed edits
+					</label>
+				</div>
+
+				<p class="small-header">Netflow</p>
+
+				<div class="checkbox">
+					<label style="cursor: pointer" title="netflow.view"><input ng-disabled="!settings.userControls.editUsers" type="checkbox" ng-model="editedSettings.netflow.view"> View Netflow</label>
+				</div>
+			</div>
+
+			<div class="col-sm-6">
+				<p class="small-header">Bunyan logs</p>
+
+				<div class="checkbox">
+					<label style="cursor: pointer" title="bunyan.search"><input ng-disabled="!settings.userControls.editUsers" type="checkbox" ng-model="editedSettings.bunyan.search"> Search Bunyan logs</label>
+					<p class="help-block">Changes whether this user can perform a general search in Bunyan logs. Without this, the user can only view Bunyan entries for which they have a link.</p>
+				</div>
+
+				<p class="small-header">WSA logs</p>
+
+				<div class="checkbox">
+					<label style="cursor: pointer" title="wsa.search"><input ng-disabled="!settings.userControls.editUsers" type="checkbox" ng-model="editedSettings.wsa.search"> Search WSA logs</label>
+					<p class="help-block">Changes whether this user can perform a general search in WSA logs. Without this, the user can only view WSA entries for which they have a link.</p>
+				</div>
+
+				
+			</div>
+		</div>
+
+
+		<div class="text-right" ng-show="!userEditForm.$pristine">
+			<button type="button" class="btn btn-sm btn-default" ng-disabled="saving" ng-click="cancelEdit()">
+				Cancel
+			</button>
+			<button type="button" class="btn btn-sm btn-primary" ng-disabled="saving || userEditForm.$invalid || userEditForm.$pristine" ng-click="saveSettings()">
+				<span ng-show="!saving">Save</span><span ng-show="saving"><i class="fa fa-circle-o-notch fa-spin"></i> Saving...</span>
+			</button>
+		</div>
+	</form>
+
+	<div style="margin-top: 3em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{user | json}}</pre>
+</div>
+
+<base-dialog id="deleteDialog">
+	<form role="form">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" ng-click="closeDialog();">&times;</button>
+			<h4 class="modal-title">Are you sure?</h4>
+		</div>
+		<div class="modal-body">
+			<p>Are you sure you want to delete the user &ldquo;<strong>{{::upn}}</strong>&rdquo;?</p>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" ng-click="closeDialog();" ng-disabled="stateHolder.deleting">Cancel</button>
+			<button type="button" class="btn btn-danger" ng-click="deleteUser();" ng-disabled="stateHolder.deleting">
+				<i ng-hide="stateHolder.deleting" class="fa fa-fw fa-trash-o"></i>
+				<i ng-show="stateHolder.deleting" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+				Delete</button>
+		</div>
+	</form>
+</base-dialog>

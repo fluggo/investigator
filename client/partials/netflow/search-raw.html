@@ -1,0 +1,91 @@
+<h1 class="top">Netflow raw search</h1>
+
+<div class="container">
+	<p><a href="netflow/search" target="_blank" ng-click="$event.preventDefault(); switchToGraph();"><i class="fa fa-fw2 fa-bar-chart"></i>Switch to graph search</a></p>
+
+	<form name="searchForm" role="form" ng-submit="commitSearch({page: 1});">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+
+		<div class="form-group form-inline" ng-show="searchResults.aggregations.packets_across_sources.global.by_reporting_ip.buckets.length">
+			<label>
+				Source:
+				<select class="form-control input-sm" ng-model="selectedReportingIp" ng-options="reporter.key as reporter.label for reporter in searchResults.aggregations.packets_across_sources.global.by_reporting_ip.buckets" ng-change="commitSearchDelay();">
+					<option value="">Choose a reporting source</option>
+				</select>
+			</label>
+		</div>
+	</form>
+
+	<p ng-show="loading && !selectedReportingIp">Searching for flows... <i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i></p>
+
+	<p class="hidden-print" ng-show="searchPerformed"><a ng-click="helpShown = !helpShown"><i class="fa fa-fw2" ng-class="[helpShown ? 'fa-caret-down' : 'fa-caret-right']"></i><i class="fa fa-fw fa-question-circle"></i>Help</a></p>
+
+	<table ng-show="helpShown || !searchPerformed" class="table table-condensed" style="background-color: #f6f6f6;">
+		<tr><td class="text-primary">10.0.0.1</td><td>Flows with the given address as a source or destination.</td></tr>
+		<tr><td class="text-primary">10.0.0.1 10.0.0.2</td><td>Either address as a source or destination.</td></tr>
+		<tr><td class="text-primary">+10.0.0.1 10.0.0.2</td><td><em>Both</em> addresses as source and destination.</td></tr>
+		<tr><td class="text-primary">-10.0.0.1</td><td><em>Not</em> the given address.</td></tr>
+		<tr><td class="text-primary">+src:10.0.0.1 +dst:10.0.0.2</td><td>Specify source or destination.</td></tr>
+		<tr><td class="text-primary">10.0.0.0/24</td><td>A block of addresses (also works with <span class="text-primary">src:</span> and <span class="text-primary">dst:</span>).</td></tr>
+		<tr><td class="text-primary">+proto:6</td><td>IP protocol number.</td></tr>
+		<tr><td class="text-primary">+icmp +tcp +udp</td><td>Aliases for <span class="text-primary">+proto:1</span>, <span class="text-primary">+proto:6</span>, and <span class="text-primary">+proto:17</span> respectively.</td></tr>
+		<tr><td class="text-primary">port:443</td><td>A TCP/UDP port as a source or destination.</td></tr>
+		<tr><td class="text-primary">+srcport:10026 +dstport:443</td><td>Specify source or destination port.</td></tr>
+		<tr><td colspan="2">Performance tip: "+" searches perform better than regular searches.</td></tr>
+	</table>
+
+	<div ng-show="searchPerformed && selectedReportingIp">
+	<dl class="dl-horizontal">
+		<dt>Flows found</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{totalHits}}</span></dd>
+	</dl>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<table class="table table-condensed">
+		<thead>
+			<tr><th>Time</th><th>Proto</th><th>Source</th><th>Target</th><th>Packets</th><th>Bytes</th><th>Flags</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="hit in packets">
+				<td title="{{::hit.last_switched | d3date:'%a %b %-d %Y %H:%M:%S.%L'}}">{{::hit.last_switched | d3date:"%H:%M:%S.%L"}}</td>
+				<td title="{{::hit.protocol}}">{{::protoNumbers['' + hit.protocol] || hit.protocol}}</td>
+				<td><span ng-mouseenter="openIpPopover(hit.ipv4_src_addr, $event);" ng-mouseleave="closeIpPopover();">{{::hit.ipv4_src_addr}}</span><span ng-show="::hit.protocol === 6 || hit.protocol === 17">:<span ng-class="::{'text-primary': hit.l4_src_port < 30000}">{{::hit.l4_src_port}}</span></span></td>
+				<td><span ng-mouseenter="openIpPopover(hit.ipv4_dst_addr, $event);" ng-mouseleave="closeIpPopover();">{{::hit.ipv4_dst_addr}}</span><span ng-show="::hit.protocol === 6 || hit.protocol === 17">:<span ng-class="::{'text-primary': hit.l4_dst_port < 30000}">{{::hit.l4_dst_port}}</span></span></td>
+				<td>{{::hit.in_pkts}}</td>
+				<td>{{::hit.in_bytes}}</td>
+				<td>
+					<span ng-show="::!!hit.tcp_flags">
+						<span class="label" ng-class="::[hit.tcp_flags.syn ? (hit.tcp_flags.ack ? 'label-success' : 'label-danger') : 'label-default']" title="SYN: Synchonize sequence numbers (start connection)">SYN</span>
+						<span class="label" ng-class="::[hit.tcp_flags.ack ? 'label-success' : 'label-default']" title="ACK: Acknowledge data">ACK</span>
+						<span class="label" ng-class="::[hit.tcp_flags.urg ? 'label-warning' : 'label-default']" title="URG: Urgent (out-of-band) data">URG</span>
+						<span class="label" ng-class="::[hit.tcp_flags.psh ? 'label-warning' : 'label-default']" title="PSH: Push buffered data">PSH</span>
+						<span class="label" ng-class="::[hit.tcp_flags.fin ? 'label-success' : 'label-default']" title="FIN: No more data from sender">FIN</span>
+						<span class="label" ng-class="::[hit.tcp_flags.rst ? 'label-danger' : 'label-default']" title="RST: Reset the connection">RST</span>
+					</span>
+					<span ng-show="::hit.protocol === 1">
+						<span ng-show="!!hit.icmpMessage" title="Type {{hit.icmpType}} Code {{hit.icmpCode}}">{{hit.icmpMessage}}</span>
+						<span ng-show="!hit.icmpMessage">Unknown ICMP type {{hit.icmpType}} code {{hit.icmpCode}}</span>
+					</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<p style="margin-top: 2em;"><a ng-click="showRawJson = !showRawJson"><i class="fa fa-fw2" ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Show raw JSON</a></p>
+
+	<pre ng-if="showRawJson">{{searchResults | json}}</pre>
+	</div>
+</div>
+
+<base-popover id="hostlist" direction="bottom">
+	<div class="popover-content" style="width: 300px;">
+		<div ng-show="ipdata.loading">Loading</div>
+		<ul class="list-inline" ng-show="!!ipdata.hosts"><li ng-repeat="host in ipdata.hosts">{{host}}</li></ul>
+		<div ng-show="!!ipdata.error">{{ipdata.error | json}}</div>
+	</div>
+</base-popover>

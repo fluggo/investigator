@@ -1,0 +1,158 @@
+<h1 class="top">Netflow search</h1>
+
+<div class="container">
+	<p><a href="netflow/search" target="_blank" ng-click="$event.preventDefault(); switchToGraph();"><i class="fa fa-fw2 fa-list"></i>Switch to raw search</a></p>
+
+	<form name="searchForm" role="form" ng-submit="commitSearch();">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+
+		<div class="form-group form-inline" ng-show="searchResults.aggregations.packets_across_sources.global.by_reporting_ip.buckets.length">
+			<label>
+				Source:
+				<select class="form-control input-sm" ng-model="selectedReportingIp" ng-options="reporter.key as reporter.label for reporter in searchResults.aggregations.packets_across_sources.global.by_reporting_ip.buckets" ng-change="commitSearchDelay();">
+					<option value="">Choose a reporting source</option>
+				</select>
+			</label>
+		</div>
+	</form>
+
+	<p ng-show="loading && !selectedReportingIp">Searching for flows... <i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i></p>
+
+	<p class="hidden-print" ng-show="searchPerformed"><a ng-click="helpShown = !helpShown"><i class="fa fa-fw2" ng-class="[helpShown ? 'fa-caret-down' : 'fa-caret-right']"></i><i class="fa fa-fw fa-question-circle"></i>Help</a></p>
+
+	<table ng-show="helpShown || !searchPerformed" class="table table-condensed" style="background-color: #f6f6f6;">
+		<tr><td class="text-primary">10.0.0.1</td><td>Flows with the given address as a source or destination.</td></tr>
+		<tr><td class="text-primary">10.0.0.1 10.0.0.2</td><td>Either address as a source or destination.</td></tr>
+		<tr><td class="text-primary">+10.0.0.1 +10.0.0.2</td><td><em>Both</em> addresses as source and destination.</td></tr>
+		<tr><td class="text-primary">-10.0.0.1</td><td><em>Not</em> the given address.</td></tr>
+		<tr><td class="text-primary">+src:10.0.0.1 +dst:10.0.0.2</td><td>Specify source or destination.</td></tr>
+		<tr><td class="text-primary">10.0.0.0/24</td><td>A block of addresses (also works with <span class="text-primary">src:</span> and <span class="text-primary">dst:</span>).</td></tr>
+		<tr><td class="text-primary">+proto:6</td><td>IP protocol number.</td></tr>
+		<tr><td class="text-primary">+icmp +tcp +udp</td><td>Aliases for <span class="text-primary">+proto:1</span>, <span class="text-primary">+proto:6</span>, and <span class="text-primary">+proto:17</span> respectively.</td></tr>
+		<tr><td class="text-primary">port:443</td><td>A TCP/UDP port as a source or destination.</td></tr>
+		<tr><td class="text-primary">+srcport:10026 +dstport:443</td><td>Specify source or destination port.</td></tr>
+		<tr><td colspan="2">Performance tip: "+" searches perform better than regular searches.</td></tr>
+	</table>
+
+	<div ng-show="searchPerformed && selectedReportingIp">
+	<dl class="dl-horizontal">
+		<dt>Flows found</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.hits.total}}</span></dd>
+	</dl>
+
+	<svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" class="netflow-graph" style="width: 100%;" height="140" netflow-graph data="searchResults.aggregations.by_time.buckets" on-time-picked="handleEnter(data);"></svg>
+
+	<div class="row">
+		<div><h3>Top IPs by data sent</h3></div>
+
+		<div class="col-sm-6">
+			<div class="row horiz-bar">Source IP</div>
+
+			<table class="horiz-bar-graph">
+				<tbody>
+					<tr ng-repeat="row in highlightedData.top_by_srcip.buckets" ng-init="ratio = row.in_bytes.value / highlightedData.top_by_srcip.buckets[0].in_bytes.value; value = row.in_bytes.value; highlighted = false;">
+						<td style="width: 20%;" ng-mouseenter="openIpPopover(row.key, $event);" ng-mouseleave="closeIpPopover();">{{row.key}}</td>
+						<td style="width: 80%;">
+							<div class="horiz-bar-container" ng-class="{highlighted: highlighted}">
+								<svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 10" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100" height="10" class="back" />
+									<rect x="0" y="0" ng-attr-width="{{::ratio * 100}}" height="10" class="bar" />
+								</svg>
+								<div class="text"
+									ng-class="::{right: ratio >= 0.2}"
+									ng-style="::{left: (ratio < 0.2) ? (ratio * 100 + '%') : null, right: (ratio >= 0.2) ? ((1 - ratio) * 100 + '%') : null}">{{value | bytes}}</div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-6">
+			<div class="row horiz-bar">Destination IP</div>
+
+			<table class="horiz-bar-graph">
+				<tbody>
+					<tr ng-repeat="row in highlightedData.top_by_dstip.buckets" ng-init="ratio = row.in_bytes.value / highlightedData.top_by_dstip.buckets[0].in_bytes.value; value = row.in_bytes.value; highlighted = false;">
+						<td style="width: 20%;" ng-mouseenter="openIpPopover(row.key, $event);" ng-mouseleave="closeIpPopover();">{{row.key}}</td>
+						<td style="width: 80%;">
+							<div class="horiz-bar-container" ng-class="{highlighted: highlighted}">
+								<svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 10" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100" height="10" class="back" />
+									<rect x="0" y="0" ng-attr-width="{{::ratio * 100}}" height="10" class="bar" />
+								</svg>
+								<div class="text"
+									ng-class="::{right: ratio >= 0.2}"
+									ng-style="::{left: (ratio < 0.2) ? (ratio * 100 + '%') : null, right: (ratio >= 0.2) ? ((1 - ratio) * 100 + '%') : null}">{{value | bytes}}</div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+
+	<div class="row">
+		<div><h3>Top ports by data sent</h3></div>
+
+		<div class="col-sm-6">
+			<div class="row horiz-bar">Source port</div>
+
+			<table class="horiz-bar-graph">
+				<tbody>
+					<tr ng-repeat="row in highlightedData.top_by_srcport_bytes.buckets" ng-init="ratio = row.in_bytes.value / highlightedData.top_by_srcport_bytes.buckets[0].in_bytes.value; value = row.in_bytes.value; highlighted = false;">
+						<td style="width: 20%;">{{::row.key}}</td>
+						<td style="width: 80%;">
+							<div class="horiz-bar-container" ng-class="{highlighted: highlighted}">
+								<svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 10" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100" height="10" class="back" />
+									<rect x="0" y="0" ng-attr-width="{{::ratio * 100}}" height="10" class="bar" />
+								</svg>
+								<div class="text"
+									ng-class="::{right: ratio >= 0.2}"
+									ng-style="::{left: (ratio < 0.2) ? (ratio * 100 + '%') : null, right: (ratio >= 0.2) ? ((1 - ratio) * 100 + '%') : null}">{{value | bytes}}</div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="col-sm-6">
+			<div class="row horiz-bar">Destination port</div>
+
+			<table class="horiz-bar-graph">
+				<tbody>
+					<tr ng-repeat="row in highlightedData.top_by_dstport_bytes.buckets" ng-init="ratio = row.in_bytes.value / highlightedData.top_by_dstport_bytes.buckets[0].in_bytes.value; value = row.in_bytes.value; highlighted = false;">
+						<td style="width: 20%;">{{::row.key}}</td>
+						<td style="width: 80%;">
+							<div class="horiz-bar-container" ng-class="{highlighted: highlighted}">
+								<svg focusable="false" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 10" preserveAspectRatio="none">
+									<rect x="0" y="0" width="100" height="10" class="back" />
+									<rect x="0" y="0" ng-attr-width="{{::ratio * 100}}" height="10" class="bar" />
+								</svg>
+								<div class="text"
+									ng-class="::{right: ratio >= 0.2}"
+									ng-style="::{left: (ratio < 0.2) ? (ratio * 100 + '%') : null, right: (ratio >= 0.2) ? ((1 - ratio) * 100 + '%') : null}">{{value | bytes}}</div>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<p style="margin-top: 2em;"><a ng-click="showRawJson = !showRawJson"><i class="fa fa-fw2" ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Show raw JSON</a></p>
+
+	<pre ng-if="showRawJson">{{searchResults | json}}</pre>
+	</div>
+</div>
+
+<base-popover id="hostlist" direction="bottom">
+	<div class="popover-content" style="width: 300px;">
+		<div ng-show="ipdata.loading">Loading</div>
+		<ul class="list-inline" ng-show="!!ipdata.hosts"><li ng-repeat="host in ipdata.hosts">{{host}}</li></ul>
+		<div ng-show="!!ipdata.error">{{ipdata.error | json}}</div>
+	</div>
+</base-popover>

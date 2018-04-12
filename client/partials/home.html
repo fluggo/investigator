@@ -1,0 +1,65 @@
+<h1 class="top"><i class="fa fa-home"></i> Home</h1>
+
+<div class="container">
+	<div class="row">
+		<div class="col-sm-4">
+			<div ng-show="settings.userControls.wiki.view">
+				<h3><i class="fa fa-fw fa-sticky-note-o"></i> Wiki</h3>
+				<ul class="list-unstyled">
+					<li><a href="wiki/search"><i class="fa fa-fw2 fa-search"></i><strong>Search</strong></a></li>
+					<li><a href="wiki/tags"><i class="fa fa-fw2 fa-tags"></i>Tag list</a></li>
+					<li><a href="wiki/tag-report"><i class="fa fa-fw2 fa-list"></i>Tag report</a></li>
+					<li><a href="wiki/duplicate-tags"><i class="fa fa-fw2 fa-list"></i>Duplicate tags</a></li>
+					<li ng-show="!!settings.userControls.wiki.edit"><a href="wiki/wiki-update"><i class="fa fa-fw2 fa-chain"></i>Wiki update</a></li>
+					<li ng-show="settings.userControls.wiki.edit === true"><a href="wiki/wiki-review"><i class="fa fa-fw2 fa-check"></i>Wiki review</a></li>
+				</ul>
+
+				<h3><i class="fa fa-fw fa-empire"></i> Cylance</h3>
+				<ul class="list-unstyled">
+					<li><a href="logs/cylance/search"><i class="fa fa-fw2 fa-search"></i><strong>Search logs</strong></a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="col-sm-4">
+			<h3><i class="fa fa-fw fa-globe"></i> LDAP</h3>
+			<ul class="list-unstyled">
+				<li><a href="ldap/search"><i class="fa fa-fw2 fa-search"></i><strong>Search</strong></a></li>
+				<li><a href="ldap/reports/unused-accounts"><i class="fa fa-fw2"></i>Report: Unused accounts</a></li>
+				<li><a href="ldap/reports/admins"><i class="fa fa-fw2"></i>Report: Top-level admins</a></li>
+				<li><a href="ldap/reports/dc-roles"><i class="fa fa-fw2"></i>Report: Domain operations masters</a></li>
+			</ul>
+
+			<h3>Logs</h3>
+			<ul class="list-unstyled">
+				<li><a href="logs/msvista/search"><i class="fa fa-fw2 fa-search"></i>Windows event log search</a></li>
+				<li><a href="logs/msvista/stats"><i class="fa fa-fw2"></i>Report: Event log statistics and data online</a></li>
+				<li><a href="logs/sql/search"><i class="fa fa-fw2 fa-search"></i>SQL log search</a></li>
+			</ul>
+
+			
+		</div>
+
+		<div class="col-sm-4">
+			<div ng-show="settings.userControls.netflow.view">
+				<h3><i class="fa fa-fw fa-cloud"></i> Netflow</h3>
+				<ul class="list-unstyled">
+					<li><a href="netflow/search"><i class="fa fa-fw2 fa-search"></i><strong>Search</strong></a></li>
+					<li><a href="netflow/health"><i class="fa fa-fw2 fa-heartbeat"></i>Health check</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-sm-4 col-sm-push-4">
+			<h3>Other</h3>
+			<ul class="list-unstyled">
+				<li><a href="logs/syslog/search"><i class="fa fa-fw2 fa-search"></i>Syslog search</a></li>
+				<li><a href="cluster"><i class="fa fa-fw2 fa-database"></i>ElasticSearch cluster info</a></li>
+				<li><a href="users/"><i class="fa fa-fw2 fa-users"></i>Users</a></li>
+			</ul>
+		</div>
+	</div>
+
+</div>

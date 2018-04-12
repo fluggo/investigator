@@ -1,0 +1,135 @@
+<h1 class="top">Cylance</h1>
+
+<div class="container">
+	<p><a href="logs/cylance/search">Back to search</a></p>
+
+	<div style="margin-top: 0.5em;" class="panel panel-default">
+		<div class="panel-body" style="padding: 10px;">
+
+			<div style="font-size: 115%; margin-left: 2em; margin-top: 5px;">
+				<span ng-switch="::entry.cylance.eventType">
+					<span ng-switch-when="ExploitAttempt">
+						<span class="text-danger"><i class="fa fa-warning"></i> Exploit attempt: {{::entry.cylance.eventName}}</span>
+					</span>
+					<span ng-switch-when="Threat">
+						<span class="text-warning"><i class="fa fa-warning"></i> Threat: {{::entry.cylance.eventName}}</span>
+					</span>
+					<span ng-switch-when="AuditLog">
+						<span class="text-info"><i class="fa fa-user"></i> Audit log: {{::entry.cylance.eventName}}</span>
+					</span>
+					<span ng-switch-when="Device">
+						<span><i class="fa fa-laptop"></i> Device: {{::entry.cylance.eventName}}</span>
+					</span>
+					<span ng-switch-default>
+						{{::entry.cylance.eventType}}: {{::entry.cylance.eventName}}
+					</span>
+				</span>
+
+				<div style="font-size: 90%;">
+					{{::entry.cylance.message}}
+				</div>
+			</div>
+
+			<div class="clearfix"></div>
+
+			<ul style="margin-top: 0.5em; font-size: 85%; margin-left: 4em; margin-bottom: 0px;" class="text-right list-inline">
+				<li>
+					<span ng-if="hit._source.userName">
+						<span class="dropdown cursor-pointer"><span base-dropdown-context-toggle>as {{hit._source.userName}}</span><ul class="dropdown-menu" role="menu">
+							<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); addTerm('loginName', hit._source.loginName);">Search on this</a></li>
+							<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); filterTerm('loginName', hit._source.loginName);">Filter this out</a></li>
+						</ul></span>
+					</span>
+					<span ng-if="!!hit._source.host">from
+						<span class="dropdown cursor-pointer"><span base-dropdown-context-toggle>{{hit._source.host}}</span><ul class="dropdown-menu" role="menu">
+							<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); selected.hostName = hit._source.hostName.toLowerCase(); commitLocation();">Search on this</a></li>
+							<li role="presentation"><a role="menuitem" tabindex="-1" href="#" ng-click="$event.preventDefault(); filterTerm('hostName', hit._source.hostName);">Filter this out</a></li>
+						</ul></span>
+					</span>
+				</li>
+				<li title="{{::entry.log.eventTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{::entry.log.eventTime | d3ago}}</li>
+			</ul>
+
+			<div class="clearfix"></div>
+		</div>
+	</div>			
+
+	<div class="row">
+		<div class="col-sm-6">
+			<p class="small-header">Device information</p>
+
+			<dl class="dl-horizontal">
+				<dt ng-show="::!!entry.cylance.deviceName">Device<span ng-show="::entry.cylance.deviceName.length > 1">s</span></dt>
+				<dd ng-show="::!!entry.cylance.deviceName"><span ng-repeat="name in entry.cylance.deviceName"><span>{{::name}}</span><span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::!!entry.cylance.ip">IP</dt>
+				<dd ng-show="::!!entry.cylance.ip"><span ng-repeat="ip in entry.cylance.ip"><span>{{::ip}}</span><span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::!!entry.cylance.mac">MAC</dt>
+				<dd ng-show="::!!entry.cylance.mac"><span ng-repeat="mac in entry.cylance.mac"><span>{{::mac}}</span><span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::!!entry.cylance.zone">Zones</dt>
+				<dd ng-show="::!!entry.cylance.zone"><span ng-repeat="zone in entry.cylance.zone"><span>{{::zone}}</span><span ng-show="::!$last">, </span></span></dd>
+				<dt ng-show="::!!entry.cylance.agentVersion">Agent version</dt>
+				<dd ng-show="::!!entry.cylance.agentVersion">{{::entry.cylance.agentVersion}}</dd>
+				<dt ng-show="::!!entry.cylance.os">Operating system</dt>
+				<dd ng-show="::!!entry.cylance.os">{{::entry.cylance.os}}</dd>
+				<dt ng-show="::!!entry.cylance.loginName">Login name</dt>
+				<dd ng-show="::!!entry.cylance.loginName">{{::entry.cylance.loginName}}</dd>
+			</dl>
+		</div>
+		<div class="col-sm-6">
+			<div ng-show="::entry.cylance.eventType === 'Threat'">
+				<p class="small-header">Threat</p>
+
+				<dl class="dl-horizontal">
+					<dt ng-show="::!!entry.cylance.status">Status</dt>
+					<dd ng-show="::!!entry.cylance.status">{{::entry.cylance.status}}</dd>
+					<dt ng-show="::!!(entry.cylance.fullPath || entry.cylance.fileName)">Path</dt>
+					<dd ng-show="::!!(entry.cylance.fullPath || entry.cylance.fileName)">{{::(entry.cylance.fullPath || entry.cylance.fileName)}}</dd>
+					<dt ng-show="::!!entry.cylance.sha256">SHA256</dt>
+					<dd ng-show="::!!entry.cylance.sha256">
+						{{::entry.cylance.sha256}}
+
+						<p><a href="https://www.virustotal.com/en/file/{{::entry.cylance.sha256}}/analysis/">VirusTotal<i class="fa fa-fw2 fa-external-link"></i></a></p>
+					</dd>
+					<dt ng-show="::!!entry.cylance.md5">MD5</dt>
+					<dd ng-show="::!!entry.cylance.md5">{{::entry.cylance.md5}}</dd>
+					<dt ng-show="::entry.cylance.cylanceScore !== undefined">Cylance Score</dt>
+					<dd ng-show="::entry.cylance.cylanceScore !== undefined">{{::entry.cylance.cylanceScore}}</dd>
+					<dt ng-show="::!!entry.cylance.fileType">File type</dt>
+					<dd ng-show="::!!entry.cylance.fileType">{{::entry.cylance.fileType}}</dd>
+					<dt ng-show="::!!entry.cylance.detectedBy">Detected by</dt>
+					<dd ng-show="::!!entry.cylance.detectedBy">{{::entry.cylance.detectedBy}}</dd>
+				</dl>
+			</div>
+
+		</div>
+	</div>
+
+	<div ng-show="::entry.cylance.eventType === 'ExploitAttempt'">
+		<p class="small-header">Exploit attempt</p>
+
+		<dl class="dl-horizontal">
+			<dt ng-show="::!!entry.cylance.violationType">Violation type</dt>
+			<dd ng-show="::!!entry.cylance.violationType">{{::entry.cylance.violationType}}</dd>
+			<dt ng-show="::!!entry.cylance.processName">Path</dt>
+			<dd ng-show="::!!entry.cylance.processName">{{::entry.cylance.processName}}</dd>
+			<dt ng-show="::!!entry.cylance.processId">Process ID</dt>
+			<dd ng-show="::!!entry.cylance.processId">{{::entry.cylance.processId}}</dd>
+		</dl>
+	</div>
+
+	<p class="small-header">Received entry</p>
+
+	<dl class="dl-horizontal">
+		<dt>Reporting IP</dt>
+		<dd>{{::entry.log.reportingIp}}</dd>
+		<dt>Receiving port</dt>
+		<dd>{{::entry.log.receivingPort}}</dd>
+		<dt>Received time</dt>
+		<dd>{{::entry.log.receivedTime | d3date:"%A %Y-%m-%d %H:%M:%S.%L%Z"}}</dd>
+	</dl>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{$resolve.cylanceEntry | json}}</pre>
+</div>

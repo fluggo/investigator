@@ -1,0 +1,43 @@
+<h1 class="top">Wiki tag report</h1>
+
+<div class="container">
+	<form name="searchForm" role="form" ng-submit="commitSearch();" class="form-horizontal hidden-print" style="margin-bottom: 2em;">
+		<div class="form-group">
+			<label for="searchString" class="col-sm-2 col-md-1 control-label">Search</label>
+			<div class="col-sm-10 col-md-11">
+				<input id="searchString" ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search terms" />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="tagString" class="col-sm-2 col-md-1 control-label">Tags</label>
+			<div class="col-sm-10 col-sm-11">
+				<input id="tagString" ng-model="tagString" class="form-control" type="text" placeholder="Tags (e.g. &quot;tag1, tag2&quot;)" />
+			</div>
+		</div>
+		<div class="form-group text-right">
+			<input class="btn btn-primary btn-sm" type="submit" text="Submit">
+		</div>
+	</form>
+
+	<table ng-show="!!searchResults" class="table table-condensed table-short-cells">
+		<thead>
+			<tr><th>Article</th><th ng-repeat="tag in searchResults.tags">{{tag.title || tag.id}}</th></tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="article in searchResults.articles">
+				<td><p><a href="wiki/article/{{encodeURIComponent(article.id)}}">{{article.title}}</a></p>
+					<p wiki-textile="article.summary" single-para="true"></p></td>
+				<td ng-repeat="tag in searchResults.tags">
+					<div ng-repeat="tagValue in article.tags[tag.id]">
+						<span ng-show="tagValue.value === true"><i class="fa fa-check"></i></span>
+						<span ng-show="tagValue.value && tagValue.value !== true">{{tagValue.value}}</span>
+						<span wiki-textile="tagValue.line" single-para="true"></span>
+					</div>
+				</td>
+			</tr>
+			<tr ng-show="searchResults.articles.length === 0"><td colspan="{{1 + searchResults.tags.length}}">No results found.</td></tr>
+		</tbody>
+	</table>
+
+	<!--<pre>{{searchResults | json}}</pre>-->
+</div>

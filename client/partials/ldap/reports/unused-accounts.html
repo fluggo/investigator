@@ -1,0 +1,59 @@
+<h1 class="top">Unused accounts</h1>
+
+<div class="container">
+	<h1>Unused accounts</h1>
+
+	<p>Current count: {{::count}}</p>
+
+	<div class="row hidden-print-link" ng-repeat="ou in reportData" style="margin-bottom: 2em;">
+		<div class="col-sm-12" style="page-break-after: avoid;"><strong>{{::ou.key}}</strong></div>
+		<div style="margin-left: 2.5em; margin-top: 2.5em;">
+			<div class="row" style="page-break-after: avoid; page-break-inside: avoid; border-bottom: 2px solid #dddddd;">
+				<div class="col-sm-6"><strong>Account</strong></div>
+				<div class="col-sm-3"><strong>Created</strong></div>
+				<div class="col-sm-3"><strong>Last logon</strong></div>
+			</div>
+			<div ng-repeat="account in ou.values" class="row" style="page-break-inside: avoid; border-bottom: 1px solid #dddddd; padding-top: 0.2em; padding-bottom: 0.2em;">
+				<div class="col-sm-6">
+					<a href="ldap/object/{{::account.ldap.objectGUID}}"><i class="fa fa-fw" style="width: 1.4em;" ng-class="::account.objectType.icon"></i>{{::account.ldap.cn}}</a>
+					<span ng-show="::account.wikiArticles.length">(<span ng-repeat="article in account.wikiArticles"><a href="wiki/article/{{::encodeURIComponent(article._id)}}">article</a><span ng-show="::!$last">, </span></span>)</span>
+					<span ng-show="::account.ldapDecoded.userAccountControl.accountDisabled" class="label label-default">Disabled</span>
+					<span ng-show="::account.ldapDecoded.userAccountControl.lockedOut" class="label label-warning">Locked out</span>
+				</div>
+				<div class="col-sm-3">{{account.ldap.whenCreated | d3date:"%Y-%m-%d"}}</div>
+				<div class="col-sm-3">{{account.ldap.lastLogonTimestamp | d3date:"%Y-%m-%d"}}</div>
+				<div class="col-sm-12" style="margin-top: 0.5em; margin-left: 2em;">
+					<div ng-repeat="article in account.wikiArticles">
+						<div class="pull-right">
+							<span ng-show="article._source.common.tags.has('never-logon')" class="label label-default">Should never log on</span>
+							<span ng-show="article._source.common.tags.has('service-account')" class="label label-default">Service account</span>
+							<span ng-show="article._source.common.tags.has('golden-image')" class="label label-default">Golden image</span>
+							<span ng-show="article._source.common.tags.has('offline')" class="label label-default">Offline</span>
+							<span ng-show="article._source.common.tags.has('dmz')" class="label label-default">DMZ</span>
+						</div>
+
+						<p>
+							<span wiki-textile="article._source.summary" single-para="true"></span>
+						</p>
+
+						<div ng-repeat="hashTag in article._source.hashTags">
+							<p ng-show="hashTag.context !== article._source.summary" wiki-textile="hashTag.context" single-para="true"></p>
+						</div>
+					</div>
+
+					<ul>
+						<li ng-show="::!!account.emails">Email: <span ng-repeat="email in account.emails">{{::email}}<span ng-show="::!$last">, </span></span></li>
+						<li ng-show="::!!account.ldap.msExchDelegateListLink">Mailbox delegates: <span ng-repeat="dn in account.ldap.msExchDelegateListLink"><ldap-object-link distinguished-name="dn"></ldap-object-link><span ng-show="::!$last">, </span></span></li>
+						<li ng-show="::!!account.ldap.publicDelegates">Mailbox delegated senders: <span ng-repeat="dn in account.ldap.publicDelegates"><ldap-object-link distinguished-name="dn"></ldap-object-link><span ng-show="::!$last">, </span></span></li>
+						<li ng-show="::!!account.ldap.altRecipient">Mail forwards to: <ldap-object-link distinguished-name="account.ldap.altRecipient"></ldap-object-link></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{reportData | json}}</pre>-->
+</div>

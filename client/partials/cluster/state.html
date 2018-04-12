@@ -1,0 +1,27 @@
+
+<div class="container">
+	<p><a href="cluster/">Back to cluster</a></p>
+
+	<h2>By alias</h2>
+
+	<ul class="fa-ul">
+		<li ng-repeat="alias in indexesByAlias">
+			<i class="fa-li fa fa-tag"></i>{{alias.key}}
+			<ul class="fa-ul">
+				<li ng-repeat="index in alias.value">
+					<i class="fa-li fa" ng-class="[index.value.state === 'open' ? 'fa-cog' : 'fa-ban text-danger']"></i>{{index.key}}
+				</li>
+			</ul>
+		</li>
+	</ul>
+
+	<h2>Indexes without aliases</h2>
+
+	<div ng-repeat="index in unaliasedIndexes">
+		<i class="fa" ng-class="[index.value.state === 'open' ? 'fa-cog' : 'fa-ban']"></i> {{index.key}} <small ng-show="index.value.state !== 'open'" class="text-muted">Offline</small>
+	</div>
+
+	<h2>Raw</h2>
+
+	<pre style="height: 40em; overflow-y: scroll;">{{stateObj | json}}</pre>
+</div>

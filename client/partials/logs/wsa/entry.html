@@ -1,0 +1,90 @@
+<h1 class="top">WSA</h1>
+
+<div class="container">
+	<p><a href="logs/wsa/search">Back to search</a></p>
+
+	<p>
+		<span class="label" ng-class="::{'label-success': decisionStatus === 'SUCCESS', 'label-warning': decisionStatus === 'WARNING', 'label-danger': decisionStatus === 'FAILURE', 'label-default': decisionStatus === 'DEFAULT'}">{{::entry.wsa.aclDecision}}</span>
+		<span ng-if="::entry.wsa.response.httpResponseCode < 200" class="label label-info"><i class="fa fa-info-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+		<span ng-if="::entry.wsa.response.httpResponseCode >= 200 && entry.wsa.response.httpResponseCode < 300" class="label label-success"><i class="fa fa-check-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+		<span ng-if="::entry.wsa.response.httpResponseCode >= 300 && entry.wsa.response.httpResponseCode < 400" class="label label-info"><i class="fa fa-mail-forward"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+		<span ng-if="::entry.wsa.response.httpResponseCode >= 400 && entry.wsa.response.httpResponseCode < 500" class="label label-warning"><i class="fa fa-warning"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+		<span ng-if="::entry.wsa.response.httpResponseCode >= 500" class="label label-danger"><i class="fa fa-times-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+
+		{{::entry.wsa.request.httpMethod}} {{::entry.wsa.request.url}}
+	</p>
+
+	<div class="pull-right">{{::entry.name}}</div>
+
+	<ul class="text-right list-inline">
+		<li>
+			<span ng-show="::entry.wsa.request.username">
+				as {{entry.wsa.request.samName || entry.wsa.request.username}}
+			</span>
+			<span ng-if="::entry.log.sourceIp">
+				from {{entry.log.sourceIp}}
+			</span>
+		</li>
+		<li title="{{::entry.log.eventTime | d3date:&quot;%A %Y-%m-%d %H:%M:%S.%L%Z&quot;}}">{{::entry.log.eventTime | d3ago}}</li>
+	</ul>
+
+	<dl class="dl-horizontal">
+		<dt>Transaction result</dt>
+		<dd>{{::entry.wsa.transactionResult}}</dd>
+		<dt>URL classification</dt>
+		<dd><span ng-show="::!!urlCategory"><strong>{{urlCategory.name}}</strong>: {{urlCategory.description}}</span><span ng-show="::!urlCategory">None</span></dd>
+	</dl>
+
+
+	<div class="row">
+		<div class="col-sm-6">
+			<p class="small-header">Request</p>
+
+			<dl class="dl-horizontal">
+				<dt>Client IP</dt>
+				<dd>{{::entry.wsa.request.clientIp}}</dd>
+				<dt>Size</dt>
+				<dd>{{::entry.wsa.request.size}}</dd>
+				<dt>Method</dt>
+				<dd>{{::entry.wsa.request.httpMethod}}</dd>
+				<dt>URL</dt>
+				<dd><a href="{{::entry.wsa.request.url}}">{{::entry.wsa.request.url}}</a></dd>
+			</dl>
+		</div>
+		<div class="col-sm-6">
+			<p class="small-header">Response</p>
+
+			<dl class="dl-horizontal">
+				<dt>Response code</dt>
+				<dd>
+					<span class="label" ng-class="::{'label-success': decisionStatus === 'SUCCESS', 'label-warning': decisionStatus === 'WARNING', 'label-danger': decisionStatus === 'FAILURE', 'label-default': decisionStatus === 'DEFAULT'}">{{entry.wsa.aclDecision}}</span>
+					<span ng-if="::entry.wsa.response.httpResponseCode < 200" class="label label-info"><i class="fa fa-info-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+					<span ng-if="::entry.wsa.response.httpResponseCode >= 200 && entry.wsa.response.httpResponseCode < 300" class="label label-success"><i class="fa fa-check-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+					<span ng-if="::entry.wsa.response.httpResponseCode >= 300 && entry.wsa.response.httpResponseCode < 400" class="label label-info"><i class="fa fa-mail-forward"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+					<span ng-if="::entry.wsa.response.httpResponseCode >= 400 && entry.wsa.response.httpResponseCode < 500" class="label label-warning"><i class="fa fa-warning"></i> {{::entry.wsa.response.httpResponseCode}} {{::httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+					<span ng-if="::entry.wsa.response.httpResponseCode >= 500" class="label label-danger"><i class="fa fa-times-circle"></i> {{::entry.wsa.response.httpResponseCode}} {{httpStatusCodes[entry.wsa.response.httpResponseCode] || 'Unknown'}}</span>
+				</dd>
+				<dt>Size</dt>
+				<dd>{{::entry.wsa.response.size}}</dd>
+				<dt ng-show="::entry.wsa.response.mimeType">MIME type</dt>
+				<dd ng-show="::entry.wsa.response.mimeType">{{::entry.wsa.response.mimeType}}</dd>
+			</dl>
+		</div>
+	</div>
+
+	<p class="small-header">Technical Info</p>
+
+	<dl class="dl-horizontal">
+		<dt>Reporting IP</dt>
+		<dd>{{::entry.log.reportingIp}}</dd>
+		<dt>Receiving port</dt>
+		<dd>{{::entry.log.receivingPort}}</dd>
+		<dt>Received time</dt>
+		<dd>{{::entry.log.receivedTime | d3date:"%A %Y-%m-%d %H:%M:%S.%L%Z"}}</dd>
+	</dl>
+
+	<div style="margin-top: 1em;" class="cursor-pointer" data-ng-click="showRawJson = !showRawJson;">
+		<i class="fa fa-fw" data-ng-class="[showRawJson ? 'fa-caret-down' : 'fa-caret-right']"></i>Raw attributes
+	</div>
+	<pre style="margin-left: 20px;" data-ng-show="!!showRawJson">{{$resolve.wsaEntry | json}}</pre>
+</div>

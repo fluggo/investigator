@@ -1,0 +1,23 @@
+<h1 class="top">Cylance device search</h1>
+
+<div class="container">
+	<form name="searchForm" role="form" ng-submit="commitSearch({page: 1});">
+		<div class="form-group">
+			<input ng-model="shadowSearchString" class="form-control" type="search" placeholder="Search" />
+		</div>
+	</form>
+
+	<dl class="dl-horizontal">
+		<dt>Total hits</dt>
+		<dd><i ng-show="loading" class="fa fa-spin fa-circle-o-notch"></i><span ng-show="!loading">{{searchResults.hits.total}}</span></dd>
+	</dl>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+
+	<div ng-repeat="hit in searchResults.hits.hits" style="margin-bottom: 1em;">
+		<div style="font-size: 110%;"><a href="cylance/device/object/{{hit._id}}"><i class="fa fa-fw fa-laptop"></i>{{ hit._source.device.name }}</a></div>
+		<!--<p>{{hit.fields['ldap.distinguishedName'][0]}}</p>-->
+	</div>
+
+	<pager page="page" page-count="pageCount" change-page="commitSearch({page: page});"></pager>
+</div>

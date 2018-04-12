@@ -1,0 +1,811 @@
+﻿/* Reset para line height from other CSS */
+pre, p, .shorter-lines { line-height: 1.4; }
+li { line-height: 1.4; margin-top: 0.2em; margin-bottom: 0.2em; }
+
+/* Make blockquote smaller */
+blockquote { font-size: inherit; padding: 5px 10px; }
+
+/**** Temp alert ****/
+#temp-alert {
+	position: fixed;
+	bottom: 0px;
+	left: 100px; right: 100px;
+	z-index: 2001;
+}
+
+/* Correction for font awesome LI */
+.fa-li {
+	top: .4em;
+}
+
+/* Allow header to scroll off */
+#topnavbar, #topbar, h1.top, header#top-header {
+	position: absolute;
+}
+
+/* Positioning of top nav elements */
+#topnavbar {
+	/* Constant site links */
+	top: 0px;
+	height: 18px;
+	font-size: 12px;
+	line-height: 18px;
+}
+
+#topbar {
+	top: 18px;
+	height: 39px;
+}
+
+h1.top {
+	/* Relocate H1 top of page to give the page a title */
+	top: 18px;
+	height: 38px;
+	font-size: 24px;
+	line-height: 38px;
+	left: 0px;
+	right: 210px;
+	z-index: 51;
+	margin: 0px 6px;
+}
+
+@media print {
+	body {
+		font-size: 9pt;
+	}
+
+	/* Styles to force "small" mode when printing (https://gist.github.com/donnierayjones/6fd9802d992b2d8d6cfd) */
+	.col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+	float: left;
+	}
+	.col-sm-12 {
+	width: 100%;
+	}
+	.col-sm-11 {
+	width: 91.66666667%;
+	}
+	.col-sm-10 {
+	width: 83.33333333%;
+	}
+	.col-sm-9 {
+	width: 75%;
+	}
+	.col-sm-8 {
+	width: 66.66666667%;
+	}
+	.col-sm-7 {
+	width: 58.33333333%;
+	}
+	.col-sm-6 {
+	width: 50%;
+	}
+	.col-sm-5 {
+	width: 41.66666667%;
+	}
+	.col-sm-4 {
+	width: 33.33333333%;
+	}
+	.col-sm-3 {
+	width: 25%;
+	}
+	.col-sm-2 {
+	width: 16.66666667%;
+	}
+	.col-sm-1 {
+	width: 8.33333333%;
+	}
+	.col-sm-pull-12 {
+	right: 100%;
+	}
+	.col-sm-pull-11 {
+	right: 91.66666667%;
+	}
+	.col-sm-pull-10 {
+	right: 83.33333333%;
+	}
+	.col-sm-pull-9 {
+	right: 75%;
+	}
+	.col-sm-pull-8 {
+	right: 66.66666667%;
+	}
+	.col-sm-pull-7 {
+	right: 58.33333333%;
+	}
+	.col-sm-pull-6 {
+	right: 50%;
+	}
+	.col-sm-pull-5 {
+	right: 41.66666667%;
+	}
+	.col-sm-pull-4 {
+	right: 33.33333333%;
+	}
+	.col-sm-pull-3 {
+	right: 25%;
+	}
+	.col-sm-pull-2 {
+	right: 16.66666667%;
+	}
+	.col-sm-pull-1 {
+	right: 8.33333333%;
+	}
+	.col-sm-pull-0 {
+	right: auto;
+	}
+	.col-sm-push-12 {
+	left: 100%;
+	}
+	.col-sm-push-11 {
+	left: 91.66666667%;
+	}
+	.col-sm-push-10 {
+	left: 83.33333333%;
+	}
+	.col-sm-push-9 {
+	left: 75%;
+	}
+	.col-sm-push-8 {
+	left: 66.66666667%;
+	}
+	.col-sm-push-7 {
+	left: 58.33333333%;
+	}
+	.col-sm-push-6 {
+	left: 50%;
+	}
+	.col-sm-push-5 {
+	left: 41.66666667%;
+	}
+	.col-sm-push-4 {
+	left: 33.33333333%;
+	}
+	.col-sm-push-3 {
+	left: 25%;
+	}
+	.col-sm-push-2 {
+	left: 16.66666667%;
+	}
+	.col-sm-push-1 {
+	left: 8.33333333%;
+	}
+	.col-sm-push-0 {
+	left: auto;
+	}
+	.col-sm-offset-12 {
+	margin-left: 100%;
+	}
+	.col-sm-offset-11 {
+	margin-left: 91.66666667%;
+	}
+	.col-sm-offset-10 {
+	margin-left: 83.33333333%;
+	}
+	.col-sm-offset-9 {
+	margin-left: 75%;
+	}
+	.col-sm-offset-8 {
+	margin-left: 66.66666667%;
+	}
+	.col-sm-offset-7 {
+	margin-left: 58.33333333%;
+	}
+	.col-sm-offset-6 {
+	margin-left: 50%;
+	}
+	.col-sm-offset-5 {
+	margin-left: 41.66666667%;
+	}
+	.col-sm-offset-4 {
+	margin-left: 33.33333333%;
+	}
+	.col-sm-offset-3 {
+	margin-left: 25%;
+	}
+	.col-sm-offset-2 {
+	margin-left: 16.66666667%;
+	}
+	.col-sm-offset-1 {
+	margin-left: 8.33333333%;
+	}
+	.col-sm-offset-0 {
+	margin-left: 0%;
+	}
+	.visible-xs {
+	display: none !important;
+	}
+	.hidden-xs {
+	display: block !important;
+	}
+	table.hidden-xs {
+	display: table;
+	}
+	tr.hidden-xs {
+	display: table-row !important;
+	}
+	th.hidden-xs,
+	td.hidden-xs {
+	display: table-cell !important;
+	}
+	.hidden-xs.hidden-print {
+	display: none !important;
+	}
+	.hidden-sm {
+	display: none !important;
+	}
+	.visible-sm {
+	display: block !important;
+	}
+	table.visible-sm {
+	display: table;
+	}
+	tr.visible-sm {
+	display: table-row !important;
+	}
+	th.visible-sm,
+	td.visible-sm {
+	display: table-cell !important;
+	}
+
+	h1.top {
+		display: none !important;
+	}
+}
+
+h2 {
+	font-size: 24px;
+}
+
+h3 {
+	font-size: 18px;
+}
+
+#tabs {
+	/*top: 56px;*/
+	position: relative;
+	top: -19px;
+	height: 23px;
+	font-size: 12px;
+}
+
+@media screen {
+	#content, #errorScreen {
+		padding-top: 76px;
+	}
+}
+
+error-message {
+	display: block;
+}
+
+/* Per-environment colors */
+h1.top, h1.top > a, h1.top > a:hover {
+	color: white;
+}
+
+/* Default colors */
+#topnavbar {
+	background: #01579b;
+}
+
+#topnavbar, #topnavbar .link {
+	color: #90BEE4;
+}
+
+#topbar, #tabs, #search-box {
+	background: #0288d1;
+}
+
+/* No environment (universal pages) */
+#topnavbar.noenv {
+	background: #444;
+}
+
+#topnavbar.noenv, #topnavbar.noenv .link {
+	color: #eee;
+}
+
+#topbar.noenv, #tabs.noenv {
+	background: #666;
+}
+
+/* muted orange
+#topnavbar.ct-prod, #topnavbar.ct-prod > a, #topnavbar.ct-prod > span > a {
+	color: #ffaf76;
+}
+
+#topbar.ct-prod, #tabs.ct-prod {
+	background: #d05905;
+}
+
+#topnavbar.ct-prod {
+	background: #a44400;
+}
+*/
+
+/* dev light green
+#topnavbar.dev, #topnavbar.dev > a, #topnavbar.dev > span > a {
+	color: #b2ee71;
+}
+
+#topbar.dev, #tabs.dev {
+	background: #64b808;
+}
+
+#topnavbar.dev {
+	background: #4c9200;
+}
+*/
+
+
+#time-editor {
+	position: absolute;
+	right: 0px;
+	top: 20px;
+	z-index: 53;
+}
+
+#time-editor a.active {
+	font-weight: bold;
+	border-bottom: 1px solid blue;
+}
+
+/* Other stylings*/
+
+#topnavbar {
+	left: 0px;
+	right: 0px;
+	z-index: 52;
+	padding: 0px 5px;
+	box-shadow: rgba(0,0,0,0.4) 0px 0px 5px;
+}
+
+#topbar {
+	left: 0px;
+	right: 0px;
+	z-index: 50;
+}
+
+.list-group-item {
+	padding: 5px 5px;
+}
+
+#tabs {
+	left: 0px;
+	right: 0px;
+	padding: 0px 2px;
+	z-index: 20;
+
+	/* Give some space for our floats to clear */
+	margin-bottom: 3px;
+}
+
+#tabs > ul {
+	list-style: none;
+}
+
+#tabs > ul > li {
+	float: left;
+	display: block;
+	color: white;
+	padding: 4px 8px;
+}
+
+#tabs > ul > li > a {
+	color: white;
+}
+
+#tabs > ul > li.active {
+	background: white;
+	color: #333;
+}
+
+#tabs > ul > li.active > a {
+	color: black;
+}
+
+a, .cursor-pointer {
+	cursor: pointer;
+}
+
+a.wiki-bad-link {
+	color: red;
+}
+
+.modal-dialog.wide {
+	width: 800px;
+}
+
+.inverse {
+	background-color: gray; color: white;
+}
+
+.small-input {
+	font-size: 0.8em; font-weight: bold;
+}
+
+/*.text-warning {
+	color: #e58600;
+}*/
+
+td.button-column, th.button-column {
+	width: 5%;
+	white-space: nowrap;
+}
+
+#content .breadcrumb {
+	padding: 0px;
+	margin-bottom: 0px;
+	background: none;
+	border-radius: 0px;
+}
+
+.cursor-pointer {
+	cursor: pointer;
+}
+
+#topbar .input-sm {
+	line-height: 1.2;
+	padding: 2px 3px;
+	height: 23px;
+}
+
+#search-box {
+	position: absolute;
+/*		width: 200px;
+	right: 8px;
+	top: 8px;*/
+
+	width: 210px;
+	padding: 8px;
+	top: 0px;
+	right: 0px;
+
+	z-index: 52;
+}
+
+#search-box > input {
+	color: white;
+}
+
+#content, #errorScreen {
+	background: white;
+	padding-bottom: 15px;
+}
+
+/** Components **/
+wiki-mini-editor {
+	display: block;
+}
+
+/** The quick search list */
+quick-search-list {
+	position: absolute;
+	right: 0px;
+	top: 100%;
+	width: 380px;
+	height: 200px;
+	z-index: 501;
+	font-size: 12px;
+	line-height: 14px;
+	padding: 3px;
+
+	/*background-color: white;*/
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
+
+quick-search-list > .search-result .bold {
+	font-weight: bold;
+}
+
+quick-search-list > .search-result {
+	text-overflow: ellipsis;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+quick-search-list > .search-result > .top {
+	padding-top: 3px;
+	font-size: 14px;
+}
+
+quick-search-list > .search-result > .bottom {
+	padding-top: 2px;
+	padding-bottom: 3px;
+	color: rgb(50%, 50%, 50%);
+}
+
+quick-search-list > .search-result > .bottom > i {
+	font-size: 14px;
+}
+
+quick-search-list > .search-result:hover, quick-search-list > .search-result.highlighted {
+	background-color: #2196f3;
+	color: white;
+}
+
+quick-search-list > .search-result:hover > .bottom, quick-search-list > .search-result.highlighted > .bottom {
+	color: rgba(100%, 100%, 100%, 0.6);
+}
+
+/** Indented paragraphs for better separation of the headers **/
+.indented-paras {
+	padding-left: 30px;
+}
+
+.indented-paras.container {
+	/* .container already starts with 15px on the left */
+	padding-left: 45px;
+}
+
+.indented-paras > h1, .indented-paras > h2, .indented-paras > hr, .indented-paras > ol.breadcrumb {
+	margin-left: -30px;
+}
+
+.indented-paras > h3 { margin-left: -15px; }
+
+.label-muted {
+	background-color: #eee;
+}
+
+/** Hide links that bootstrap normally puts after the anchor in print mode */
+.hidden-print-link a:after, a.hidden-print-link:after {
+	content: "";
+}
+
+svg.netflow-graph {
+	overflow: visible;
+}
+
+.netflow-graph .grid-back {
+	fill: white;
+}
+
+/* Don't draw the axis line or text for the grid */
+.netflow-graph .grid path, .netflow-graph .grid text {
+	display: none;
+}
+
+.netflow-graph .axis text {
+	/* Make graph text match general stylesheet */
+	font-family: "Roboto","Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 13px;
+	fill: #666666;
+}
+
+.netflow-graph .axis line, .netflow-graph .axis path {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.netflow-graph .axis path {
+	stroke-width: 1px;
+}
+
+.netflow-graph .bars rect {
+	fill: #2196f3;
+	stroke: none;
+}
+
+.diff {
+	white-space: pre-wrap;
+}
+
+.diff .ins {
+	color: green;
+}
+
+.diff .del {
+	color: red;
+	text-decoration: line-through;
+}
+
+/**** Ad-hoc horizontal bar graphs *****/
+.horiz-bar {
+	height: 23px;
+	line-height: 23px;
+}
+
+table.horiz-bar-graph {
+	width: 100%;
+	line-height: 23px;
+}
+
+table.horiz-bar-graph div.horiz-bar-container {
+	position: relative;
+	height: 23px;
+}
+
+table.horiz-bar-graph div.horiz-bar-container > svg {
+	position: absolute;
+	width: 100%;
+	height: 23px;
+}
+
+table.horiz-bar-graph div.horiz-bar-container > svg > rect.back {
+	fill: #f5f5f5;
+	stroke: none;
+}
+
+table.horiz-bar-graph div.horiz-bar-container > svg > rect.bar {
+	fill: #2196f3;
+	stroke: none;
+}
+
+table.horiz-bar-graph div.horiz-bar-container.highlighted > svg > rect.bar {
+	fill: red;
+}
+
+table.horiz-bar-graph div.horiz-bar-container > div.text {
+	position: absolute;
+	padding-left: 3px;
+	padding-right: 3px;
+	color: black;
+}
+
+table.horiz-bar-graph div.horiz-bar-container > div.text.right {
+	color: white !important;
+}
+
+dd > ul.list-unstyled {
+	/* Remove margin to clean up appearance */
+	margin-bottom: 0px;
+}
+
+.small-header {
+	font-weight: bold;
+	text-transform: uppercase;
+	font-size: 92%;
+	margin-top: 0.7em;
+	margin-bottom: 0px
+}
+
+.text-muted.inverted {
+	background-color: #bbbbbb;
+	color: white;
+}
+
+.text-primary.inverted {
+	background-color: #2196f3;
+	color: white;
+}
+
+.text-warning.inverted {
+	background-color: #ff9800;
+	color: white;
+}
+
+.text-danger.inverted {
+	background-color: #e51c23;
+	color: white;
+}
+
+.text-success.inverted {
+	background-color: #4caf50;
+	color: white;
+}
+
+.text-info.inverted {
+	background-color: #9c27b0;
+	color: white;
+}
+
+.interest-buttons a {
+	display: inline-block;
+	padding-left: 2px;
+	padding-right: 2px;
+	cursor: pointer;
+}
+
+/* Public forms */
+
+.security-impact-rating {
+	font-weight: bold;
+	text-transform: uppercase;
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
+	text-align: center;
+}
+
+.security-impact-rating > a {
+	color: white;
+}
+
+.table.table-short-cells>tbody>tr>td {
+	line-height: 1.4
+}
+
+.red-highlights strong, .red-highlight {
+	color: #e51c23;
+	font-weight: bold;
+}
+
+.segmented-word:hover, .clickable-cell:hover {
+	background-color: #eeeeee;
+	color: blue;
+	cursor: pointer;
+}
+
+.format-log-messages .log-message {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+
+.log-pre .log-message {
+	font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+	font-size: 12px;
+	tab-size: 4;
+}
+
+/* Wider fixed-width icons */
+.fa-fw2 {
+	width: 1.6em;
+	text-align: center;
+}
+
+
+.cm-s-tagstheme {
+	box-shadow: inset 0 -1px 0 #ddd;
+}
+
+.cm-s-tagstheme .cm-keyword {
+	color: #2196f3;
+}
+
+.cm-s-tagstheme .cm-string {
+	color: #9c27b0;
+}
+
+.back-yellow-500 {
+	background-color: #ffeb3b;
+}
+
+.time-selector-highlighted {
+	background-color: #ffeb3b;
+	padding-left: 0.25em;
+	padding-right: 0.5em;
+	color: black;
+}
+
+.back-blue-grey-500 {
+	background-color: #607d8b;
+}
+
+.label-potential-column {
+	/* Blue 200 */
+	background-color: #90caf9;
+}
+
+wiki-tag-editor > .CodeMirror {
+	height: auto;
+	font-size: 90%;
+}
+
+.ago-full-time {
+	display: none;
+}
+
+.ago-short-time {
+	display: inline;
+}
+
+.ago-show-full .ago-full-time {
+	display: inline;
+}
+
+.ago-show-full .ago-short-time {
+	display: none;
+}
+
+@media print {
+	.ago-full-time {
+		display: inline !important;
+	}
+
+	.ago-short-time {
+		display: none !important;
+	}
+}
