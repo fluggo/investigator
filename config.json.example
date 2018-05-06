@@ -55,5 +55,8 @@
 
     // Log as Bunyan JSON stream to stdout
     "stdout": {}
-  }
+  },
+
+  // Service key for internal services to authenticate
+  "serviceKey": ""
 }

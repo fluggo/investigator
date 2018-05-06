@@ -52,7 +52,7 @@ wsapi.on('cluster/stats', function(request, callback, notifyCallback) {
   es.getClusterStats(callback);
 });
 
-const _config = require('./config');
+import _config = require('./config');
 const logger = _config.logger;
 
 const es = require('./es');
