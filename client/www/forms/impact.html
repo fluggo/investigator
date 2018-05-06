@@ -5,111 +5,24 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-		<title>Request for new product support</title>
-		<base href="<!-- @echo FORMS_URL_BASE_PATH -->">
+		<title>Impact rating selector</title>
+		<base href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>forms/">
 
-		<link rel="shortcut icon" href="<!-- @echo URL_BASE_PATH-->js/console-app.ico">
-		<link href="js/bootswatch-3.3.5-paper/bootstrap.min.css" rel="stylesheet">
-		<link href="js/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet">
-		<link href="js/angular-csp.css" rel="stylesheet" />
-		<link href="js/app.css" rel="stylesheet" />
+		<link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>js/console-app.ico">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha256-3dkvEK0WLHRJ7/Csr0BZjAWxERc5WH7bdeUya2aXxdU=" crossorigin="anonymous" />
 	</head>
 	<body ng-controller="AppController" ng-csp ng-app="PublicForms">
 
-		<div class="container" ng-controller="support.new">
-			<ol class="breadcrumb">
+		<div class="container" ng-controller="impact.selector" class="ng-cloak">
+			<ol class="breadcrumb print-hidden">
 				<li><a href="/"><i class="fa fa-fw fa-lock"></i>Infosec</a></li>
 			</ol>
 
-			<h1>Request for new product support</h1>
+			<h1>Impact rating selector</h1>
 
-			<p><strong>Please take the time to provide us with some information about your product or service request.</strong>
-				(<a ng-click="showWhatIsThis();"><i class="fa fa-question-circle"></i> What is this?</a>)</p>
+			<p>Use the interactive chart below to help decide how much security impact your data has on your business. (<a ng-click="reset()">Click here to reset.</a>)</p>
 
 			<form role="form" name="form">
-				<h2>Product info</h2>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<label for="productName">What is the name of the product or service?</label>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.productName.$dirty && form.productName.$invalid}">
-							<input type="text" class="form-control" ng-model="productName" name="productName" id="productName" placeholder="Adobe Photoshop" required ng-minlength="3">
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<p>Describe in one or two short sentences what the product or service is.</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.productDescription.$dirty && form.productDescription.$invalid}">
-							<textarea type="text" class="form-control" ng-model="productDescription" name="productDescription" id="productDescription" placeholder="Program for editing photos." ng-required="true" ng-minlength="15"></textarea>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<p>What is the website for this product or service?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.productWebsite.$dirty && form.productWebsite.$invalid}">
-							<textarea type="text" class="form-control" ng-model="productWebsite" name="productWebsite" id="productWebsite" placeholder="http://www.adobe.com/products/photoshop.html"></textarea>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<p>Who in your department is the best contact when we have questions about this product?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.contactName.$dirty && form.contactName.$invalid}">
-							<input type="text" class="form-control" ng-model="contactName" name="contactName" id="contactName" required ng-minlength="5">
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<p>How many users in your department will use this product?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.userCount.$dirty && form.userCount.$invalid}">
-							<input type="number" class="form-control" ng-model="userCount" name="userCount" id="userCount" required min="1">
-						</div>
-					</div>
-				</div>
-
-				<h2 style="margin-top: 2em;">Data security</h2>
-
-				<div class="form-group" style="margin-top: 2em;">
-					<p>What kind of data does this product work with?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.dataName.$dirty && form.dataName.$invalid}">
-							<input type="text" class="form-control" ng-model="dataName" id="dataName" name="dataName" placeholder="Promotional pictures" required ng-minlength="3">
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group" style="margin-top: 3em;">
-					<p>Does this product send data to or receive data from another company?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11">
-							<div class="radio">
-								<label><input type="radio" name="internetDataRadios" ng-model="dataTransmission" value="localOnly" required> No, we use only locally-stored data (e.g. Adobe Photoshop, Microsoft Excel)</label>
-							</div>
-							<div class="radio">
-								<label><input type="radio" name="internetDataRadios" ng-model="dataTransmission" value="receive"> Yes, we receive data that we use for business purposes (e.g. stock prices, weather conditions)</label>
-							</div>
-							<div class="radio">
-								<label><input type="radio" name="internetDataRadios" ng-model="dataTransmission" value="receiveOrSend"> Yes, it sends or receives company data (e.g. Dropbox, Microsoft OneNote)</label>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<p style="margin-top: 3em;">Now think about how important this data is to you, and answer the following questions based on <strong>how much impact the data has on the business</strong>.</p>
 
 				<div class="row col-sm-offset-1 col-sm-10">
 					<p><a ng-click="showImpactGuide = true;" ng-show="!showImpactGuide"><i class="fa fa-chevron-circle-right"></i> Click here for a quick guide on impact levels</a></p>
@@ -171,7 +84,7 @@
 							<i class="fa fa-check-circle" ng-show="confidentialityImpact === 'high'"></i> <a ng-click="confidentialityImpact = 'high';">HIGH</a>
 						</div>
 						<div ng-switch="confidentialityImpact" style="margin-top: 0.5em; min-height: 15em;">
-							<p ng-switch-when=""><strong>Choose an impact level.</strong></p>
+							<p ng-show="!confidentialityImpact"><strong>Choose an impact level.</strong></p>
 							<div ng-switch-when="public"><p><strong class="text-primary">Confidentiality: Public</strong></p> <p>The data isn't confidential at all.</p></div>
 							<div ng-switch-when="low"><p><strong class="text-success">Confidentiality: Low impact</strong>
 								<p>If released or stolen:</p>
@@ -212,7 +125,7 @@
 							<i class="fa fa-check-circle" ng-show="integrityImpact === 'high'"></i> <a ng-click="integrityImpact = 'high';">HIGH</a>
 						</div>
 						<div ng-switch="integrityImpact" style="margin-top: 0.5em; min-height: 15em;">
-							<p ng-switch-when=""><strong>Choose an impact level.</strong></p>
+							<p ng-show="!integrityImpact"><strong>Choose an impact level.</strong></p>
 							<div ng-switch-when="low"><p><strong class="text-success">Integrity: Low impact</strong></p>
 								<p>If someone makes an unauthorized change:</p>
 								<ul>
@@ -249,7 +162,7 @@
 							<i class="fa fa-check-circle" ng-show="availabilityImpact === 'high'"></i> <a ng-click="availabilityImpact = 'high';">HIGH</a>
 						</div>
 						<div ng-switch="availabilityImpact" style="margin-top: 0.5em; min-height: 15em;">
-							<p ng-switch-when=""><strong>Choose an impact level.</strong></p>
+							<p ng-show="!availabilityImpact"><strong>Choose an impact level.</strong></p>
 							<div ng-switch-when="low"><p><strong class="text-success">Availability: Low impact</strong></p>
 								<p>If this data is lost or unavailable:</p>
 								<ul>
@@ -279,46 +192,17 @@
 
 				<div class="clearfix"></div>
 
-				<div class="form-group" style="margin-top: 2em;">
-					<p>(Optional) Do you have anything else to add about this product or your requirements for it?</p>
-
-					<div class="row">
-						<div class="col-xs-offset-1 col-xs-11" ng-class="{'has-error': form.comments.$dirty && form.comments.$invalid}">
-							<textarea type="text" class="form-control" ng-model="comments" name="comments" id="comments"></textarea>
-						</div>
+				<div class="panel panel-default">
+					<div class="panel-heading">Impact rating code</div>
+					<div class="panel-body">
+						<span ng-show="impact === ''">Choose ratings above to receive an impact rating code.</span>
+						<span ng-show="impact !== ''" style="font-size: 200%;">{{impact}}</span>
 					</div>
-				</div>
-
-				<div class="pull-right" style="margin-top: 4rem;">
-					<strong class="text-danger" ng-show="form.$invalid">Please fill out all fields.</strong>
-					<strong class="text-danger" ng-show="!form.$invalid && (availabilityImpact === '' || integrityImpact === '' || confidentialityImpact === '')">Please choose impact ratings above.</strong>
-					<button type="button" class="btn btn-primary" ng-show="!submitted" ng-disabled="saving || form.$invalid" ng-click="sendResults()"><i ng-show="saving" class="fa fa-fw fa-spin fa-circle-o-notch"></i><i ng-show="!saving" class="fa fa-fw fa-paper-plane"></i>Send support request</button>
 				</div>
 			</form>
 		</div>
 
 		<div style="height: 12rem;"></div>
-
-		<base-dialog id="whatIsThisDialog">
-			<form role="form">
-				<div class="modal-header">
-					<button type="button" class="close" aria-hidden="true" ng-click="closeDialog();">&times;</button>
-					<h4 class="modal-title"><i class="fa fa-fw fa-question-circle"></i>What is this?</h4>
-				</div>
-				
-			</form>
-		</base-dialog>
-
-		<base-dialog id="submittedDialog">
-			<form role="form">
-				<div class="modal-header">
-					<h4 class="modal-title"><i class="fa fa-fw fa-check-circle"></i>Submitted</h4>
-				</div>
-				<div class="modal-body">
-					<p>Thank you for taking the time to submit this information.</p>
-				</div>
-			</form>
-		</base-dialog>
 
 		<base-temp-alert></base-temp-alert>
 

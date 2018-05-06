@@ -8,18 +8,6 @@ var diff = require('diff');
 var CodeMirror = require('codemirror');
 require('codemirror/addon/hint/show-hint.js');
 
-// Require all the template pages; browserify will turn these into angular templates
-require('./article.html');
-require('./new.html');
-require('./search.html');
-require('./tags-list.html');
-require('./tag-report.html');
-require('./wiki-merge.html');
-require('./wiki-review.html');
-require('./format-help.html');
-require('./history.html');
-require('./duplicate-tag-report.html');
-
 module.service('wikiHinter', function(app, alerts, $log) {
   var _knownTags = d3.map();
 
@@ -1409,7 +1397,7 @@ module.directive('wikiTagEditor', function($rootScope, wikiHinter, $timeout) {
 });
 
 module.component('wikiMiniEditor', {
-  templateUrl: require('./wiki-mini-editor.html'),
+  template: require('./wiki-mini-editor.html'),
   bindings: {
     recommendations: '<',
     providedArticle: '<article',

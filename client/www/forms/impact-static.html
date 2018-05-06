@@ -6,13 +6,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 		<title>Impact rating sheet</title>
-		<base href="<!-- @echo FORMS_URL_BASE_PATH -->">
+		<base href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>forms/">
 
-		<link rel="shortcut icon" href="<!-- @echo URL_BASE_PATH-->js/console-app.ico">
-		<link href="js/bootswatch-3.3.5-paper/bootstrap.min.css" rel="stylesheet">
-		<link href="js/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet">
-		<link href="js/angular-csp.css" rel="stylesheet" />
-		<link href="js/app.css" rel="stylesheet" />
+		<link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>js/console-app.ico">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha256-3dkvEK0WLHRJ7/Csr0BZjAWxERc5WH7bdeUya2aXxdU=" crossorigin="anonymous" />
 		<style>
 			.text-primary {
 				color: #2196f3 !important;

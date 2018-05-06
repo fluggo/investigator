@@ -22,15 +22,28 @@ const angularModule = angular.module('investigator', [
   'ngRoute',
   'investigator.Search',
   'investigator.Routes',
-  'investigator.Templates',
   'angular-websocket',
 ]);
 
+// All submodules
 var d3 = require('d3');
 require('./routes.js');
 require('./search.js');
 require('./base.js');
 require('./template');
+require('./partials/ldap');
+require('./partials/logs');
+require('./partials/netflow');
+require('./partials/wiki');
+require('./partials/users');
+require('./partials/cylance');
+
+// All CSS (for now)
+require('./www/js/app.css');
+require('bootswatch/paper/bootstrap.min.css');
+require('codemirror/lib/codemirror.css');
+require('codemirror/addon/hint/show-hint.css');
+require('angular/angular-csp.css');
 
 const extend = require('extend');
 

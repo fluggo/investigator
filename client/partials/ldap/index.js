@@ -4,15 +4,6 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-// Require all the template pages; browserify will turn these into angular templates
-require('./object.html');
-require('./search.html');
-require('./reports/admins.html');
-require('./reports/unused-accounts.html');
-require('./reports/dc-roles.html');
-require('./template/ldap-object-link.html');
-require('./template/ldap-short-view.html');
-
 module.directive('ldapObjectLink', function($rootScope, app, $log) {
   // List of lookups to be done on the next digest cycle
   var _upcomingLookups = [];
@@ -95,7 +86,7 @@ module.directive('ldapObjectLink', function($rootScope, app, $log) {
   return {
     restrict: 'E',
     scope: {distinguishedName: '=?', objectGuid: '=?', summary: '=?', showDomain: '@'},
-    templateUrl: 'partials/ldap/template/ldap-object-link.html',
+    template: require('./template/ldap-object-link.html'),
     link: function(scope, element) {
       scope.$watch('fetchData.summary', function(newValue) {
         populateScope(scope, newValue);
@@ -378,7 +369,7 @@ module.controller('views.ldap.reports.dc-roles', function LdapDCRolesController(
 });
 
 module.component('ldapShortView', {
-  templateUrl: 'partials/ldap/template/ldap-short-view.html',
+  template: require('./template/ldap-short-view.html'),
   bindings: {
     ldapSource: '<ldap',
   },
