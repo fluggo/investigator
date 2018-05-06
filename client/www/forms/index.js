@@ -11,7 +11,7 @@ var module = angular.module('PublicForms', [
 ]);
 
 var d3 = require('d3');
-require('../../base.js');
+require('../../base');
 require('../../template');
 require('../js/app.css');
 require('bootswatch/paper/bootstrap.min.css');

@@ -7,7 +7,7 @@ const d3 = require('d3');
 const async = require('async');
 const stream = require('stream');
 const EventEmitter = require('events');
-const config = require('./config.js');
+const config = require('./config');
 const logger = config.logger;
 
 const _esclient = new require('elasticsearch').Client(config.elasticsearch);

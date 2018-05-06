@@ -1,9 +1,9 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const wiki = require('./index.js');
-const indexMaint = require('./index-maint.js');
-const util = require('./util.js');
+const wsapi = require('../wsapi');
+const wiki = require('./index');
+const indexMaint = require('./index-maint');
+const util = require('./util');
 const users = require('../users');
 
 function canViewWiki(user) {
@@ -211,7 +211,7 @@ wsapi.on('wiki/get-known-tags', function(request, callback, notifyCallback) {
     return callback(new Error('Request denied.'));
   }
 
-  return require('./index-maint.js').getKnownTags((err, tags) => {
+  return require('./index-maint').getKnownTags((err, tags) => {
     if(err)
       return callback(err);
 

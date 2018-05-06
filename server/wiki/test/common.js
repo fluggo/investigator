@@ -5,7 +5,7 @@
 const chai = require('chai'), expect = chai.expect;
 
 describe('Common wiki utils', function() {
-  const util = require('../../../common/util.js');
+  const util = require('../../../common/util');
 
   describe('shrinkTitleId function:', function() {
     it('passes through a simple value', function() {

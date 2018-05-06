@@ -1,9 +1,9 @@
 'use strict';
 
-const config = require('../server/config.js');
+const config = require('../server/config');
 const logger = config.logger;
 
-const es = require('../server/es.js');
+const es = require('../server/es');
 
 const loggerStatsTemplate = {
   template: 'logger-stats-*',
@@ -572,7 +572,7 @@ function deleteOldSnapshots(repositories, daysToKeep, callback) {
 
 switch(bareArgs[0]) {
   case 'create-wiki':
-    require('../server/wiki/index-maint.js').createWiki({}, mainCallback);
+    require('../server/wiki/index-maint').createWiki({}, mainCallback);
     break;
 
   case 'delete-wiki':
@@ -580,11 +580,11 @@ switch(bareArgs[0]) {
       return mainCallback(new Error('Not going to delete the wiki without --force.'));
     }
 
-    require('../server/wiki/index-maint.js').deleteWiki(mainCallback);
+    require('../server/wiki/index-maint').deleteWiki(mainCallback);
     break;
 
   case 'reindex-wiki':
-    require('../server/wiki/index-maint.js').reindexArticles(null, function(err, res) {
+    require('../server/wiki/index-maint').reindexArticles(null, function(err, res) {
       if(err)
         return mainCallback(err);
 
@@ -597,11 +597,11 @@ switch(bareArgs[0]) {
     if(!bareArgs[1])
       return mainCallback(new Error('Not enough arguments. Need to specify the index name.'));
 
-    require('../server/wiki/index-maint.js').switchAliasesTo(bareArgs[1], mainCallback);
+    require('../server/wiki/index-maint').switchAliasesTo(bareArgs[1], mainCallback);
     break;
 
   case 'show-tag-types':
-    require('../server/wiki/index-maint.js').fetchTags(function(err, res) {
+    require('../server/wiki/index-maint').fetchTags(function(err, res) {
       if(err)
         return mainCallback(err);
 
@@ -800,7 +800,7 @@ switch(bareArgs[0]) {
     break;
 
   case 'snapshot-wiki':
-    require('../server/wiki/index-maint.js').createSnapshot(mainCallback);
+    require('../server/wiki/index-maint').createSnapshot(mainCallback);
     break;
 
   default:

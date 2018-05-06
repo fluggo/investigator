@@ -1,11 +1,11 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+const util = require('../../common/util');
+const logColumns = require('../../common/logcolumns');
 
 const SYSLOG_INDEX_ALIAS = 'raw-syslog';
 const SYSLOG_TYPE = 'raw-syslog';
@@ -180,7 +180,7 @@ function createSyslogQuery(terms, options, startTime, endTime) {
 function searchSyslogLogs(query, callback) {
   var startTime = util.createRelativeDate(query.start, false);
   var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
+  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
   const esQuery = createSyslogQuery(parseQueryTerms(query.q), {}, startTime, endTime);
   const sortColumn = logColumns.syslogColumnsByName.get(query.sortProp);
 

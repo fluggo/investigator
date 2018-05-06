@@ -10,7 +10,7 @@ const packageJson = require('../package.json');
 const uuid = require('uuid/v4');
 
 
-const wsapi = require('./wsapi.js');
+const wsapi = require('./wsapi');
 
 wsapi.on('dns/reverse', function(request, callback, notifyCallback) {
   require('dns').reverse(request.data.ip, (err, result) => {
@@ -54,16 +54,16 @@ wsapi.on('cluster/stats', function(request, callback, notifyCallback) {
   es.getClusterStats(callback);
 });
 
-const _config = require('./config.js');
+const _config = require('./config');
 const logger = _config.logger;
 
-const es = require('./es.js');
-require('./wiki/wsapi.js');
-require('./ldap/wsapi.js');
-require('./users/wsapi.js')
-require('./netflow/wsapi.js');
-require('./cylance/wsapi.js');
-require('./logs/wsapi.js')
+const es = require('./es');
+require('./wiki/wsapi');
+require('./ldap/wsapi');
+require('./users/wsapi')
+require('./netflow/wsapi');
+require('./cylance/wsapi');
+require('./logs/wsapi')
 const netflow = require('./netflow');
 const users = require('./users');
 const logs = require('./logs');
@@ -259,7 +259,7 @@ function startServer(callback) {
   });
 
   // Add in the application router
-  app.use(_config.formsSubdir, require('./forms.js').router);
+  app.use(_config.formsSubdir, require('./forms').router);
   app.use(_config.subdir, router);
 
   // Report errors to Bunyan
@@ -414,7 +414,7 @@ function startServer(callback) {
   wsServiceServer.on('connection', function(ws) {
     // Send the first update, which is the list of valid client versions
     ws.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
-    ws.send(JSON.stringify({type: 'wiki/memory-map', data: require('./wiki/index-maint.js').getMemoryMapPublishedVersionSync()})) ;
+    ws.send(JSON.stringify({type: 'wiki/memory-map', data: require('./wiki/index-maint').getMemoryMapPublishedVersionSync()})) ;
     wsapi.service.registerSocket(ws);
 
     ws.on('message', function(message) {
@@ -475,7 +475,7 @@ function startServer(callback) {
 // Start everything
 async.series([
   // Wait for wiki maintenance tasks to finish before we expose the site
-  cb => require('./wiki/index-maint.js').pushWriteQueue(null, cb),
+  cb => require('./wiki/index-maint').pushWriteQueue(null, cb),
   startServer,
 ], function(err) {
 });

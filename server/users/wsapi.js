@@ -1,7 +1,7 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const users = require('./index.js');
+const wsapi = require('../wsapi');
+const users = require('./index');
 
 function canEditUsers(user) {
   return user.getSettings().userControls.editUsers;

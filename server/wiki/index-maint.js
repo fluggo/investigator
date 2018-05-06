@@ -1,13 +1,13 @@
 'use strict';
 
-const util = require('./util.js');
+const util = require('./util');
 const async = require('async');
-const es = require('../es.js');
+const es = require('../es');
 const d3 = require('d3');
 const uuid = require('uuid/v4');
 const extend = require('extend');
 const users = require('../users');
-const userFuncs = require('./user-funcs.js');
+const userFuncs = require('./user-funcs');
 
 const logger = util.logger;
 
@@ -828,7 +828,7 @@ function getMemoryMapPublishedVersionSync() {
 }
 
 function fetchLatestWikiMap(callback) {
-  const wsapi = require('../wsapi.js');
+  const wsapi = require('../wsapi');
 
   return createWikiMap((err, result) => {
     if(err) {

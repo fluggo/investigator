@@ -1,5 +1,5 @@
 // Use local elasticsearch for testing
-const config = require('../config.js');
+const config = require('../config');
 
 config.reloadConfig({
   indexPrefix: 'test-',

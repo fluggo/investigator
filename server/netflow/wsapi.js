@@ -1,7 +1,7 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const netflow = require('./index.js');
+const wsapi = require('../wsapi');
+const netflow = require('./index');
 
 function canViewNetflow(user) {
   return user.getSettings().userControls.netflow.view;

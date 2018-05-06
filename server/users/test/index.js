@@ -4,12 +4,12 @@
 
 const chai = require('chai'), expect = chai.expect;
 
-const es = require('../../es.js');
+const es = require('../../es');
 const async = require('async');
-const users = require('../index.js');
-const wsapi = require('../../wsapi.js');
-const config = require('../../config.js');
-require('../wsapi.js');
+const users = require('../index');
+const wsapi = require('../../wsapi');
+const config = require('../../config');
+require('../wsapi');
 
 function createTestUsers(userList, options, callback) {
   // articles: array of wiki objects ({title: '', body: '', tags: []})

@@ -1,11 +1,11 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+const util = require('../../common/util');
+const logColumns = require('../../common/logcolumns');
 
 const DNS_INDEX_ALIAS = 'dns';
 const DNS_TYPE = 'dns';

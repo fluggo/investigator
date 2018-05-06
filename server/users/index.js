@@ -12,9 +12,9 @@ const USER_MAPPING = {
 
 const d3 = require('d3');
 const async = require('async');
-const es = require('../es.js');
+const es = require('../es');
 const EventEmitter = require('events');
-const logger = require('../config.js').logger;
+const logger = require('../config').logger;
 
 // 24H date format down to the millisecond for marking active indices
 // We go to the millisecond
@@ -29,7 +29,7 @@ function UserError(message, code) {
 
 require('util').inherits(UserError, Error);
 
-var _config = require('../config.js');
+var _config = require('../config');
 var PREFIX = _config.indexPrefix || '';
 var USER_READ_ALIAS = PREFIX + 'user', USER_WRITE_ALIAS = PREFIX + 'user';
 const USER = 'user';

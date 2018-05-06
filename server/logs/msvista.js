@@ -1,11 +1,11 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+const util = require('../../common/util');
+const logColumns = require('../../common/logcolumns');
 const async = require('async');
 
 const MSVISTA_INDEX_ALIAS = 'msvistalog';
@@ -351,7 +351,7 @@ function createVistaQuery(terms, options, startTime, endTime) {
 function searchVistaLogs(query, callback) {
   var startTime = util.createRelativeDate(query.start, false);
   var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
+  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
   const esQuery = createVistaQuery(parseQueryTerms(query.q), {}, startTime, endTime);
   const sortColumn = logColumns.msvistaColumnsByName.get(query.sortProp);
 
@@ -479,7 +479,7 @@ function getVistaLogStats(callback) {
 function findAdminLogins(query, callback) {
   var startTime = util.createRelativeDate(query.start, false);
   var endTime = util.createRelativeDate(query.end, true);
-  const wikiMap = require('../wiki/index-maint.js').getWikiMemoryMapSync();
+  const wikiMap = require('../wiki/index-maint').getWikiMemoryMapSync();
 
   return es.client.search({
     index: MSVISTA_INDEX_ALIAS,

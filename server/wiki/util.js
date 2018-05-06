@@ -1,6 +1,6 @@
 'use strict';
 
-const logger = require('../config.js').logger.child({module: 'wiki'});
+const logger = require('../config').logger.child({module: 'wiki'});
 
 function WikiError(message, code) {
   Error.captureStackTrace(this, this.constructor);
@@ -14,13 +14,13 @@ require('util').inherits(WikiError, Error);
 module.exports.WikiError = WikiError;
 module.exports.logger = logger;
 
-const wikiUtil = require('../../common/util.js');
-const textile = require('../../common/textile.js');
-const indexMaint = require('./index-maint.js');
+const wikiUtil = require('../../common/util');
+const textile = require('../../common/textile');
+const indexMaint = require('./index-maint');
 const Netmask = require('netmask').Netmask;
 
-const _config = require('../config.js').wiki || {};
-const PREFIX = require('../config.js').indexPrefix || '';
+const _config = require('../config').wiki || {};
+const PREFIX = require('../config').indexPrefix || '';
 const WIKI_READ_ALIAS = PREFIX + 'wiki-read';
 const WIKI_WRITE_ALIAS = PREFIX + 'wiki-write';
 const ARTICLE = 'article';

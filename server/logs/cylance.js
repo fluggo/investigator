@@ -1,11 +1,11 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+const util = require('../../common/util');
+const logColumns = require('../../common/logcolumns');
 
 const CYLANCE_INDEX_ALIAS = 'cylancelog';
 const CYLANCE_TYPE = 'cylancelog';
@@ -340,7 +340,7 @@ function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
 function searchCylanceLogs(query, callback) {
   var startTime = util.createRelativeDate(query.start, false);
   var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
+  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
   let domainSet = [];
   const esQuery = createCylanceQuery(parseQueryTerms(query.q), {}, startTime, endTime, domainSet);
   const sortColumn = logColumns.cylanceColumnsByName.get(query.sortProp);

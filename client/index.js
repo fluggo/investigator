@@ -27,9 +27,9 @@ const angularModule = angular.module('investigator', [
 
 // All submodules
 var d3 = require('d3');
-require('./routes.js');
-require('./search.js');
-require('./base.js');
+require('./routes');
+require('./search');
+require('./base');
 require('./template');
 require('./partials/ldap');
 require('./partials/logs');
@@ -455,7 +455,7 @@ angularModule.service('appSocket', function AppSocket($websocket, $rootScope, $t
 });
 
 angularModule.service('app', function(appSocket, d3service, alerts, $rootScope, $log) {
-  var utilService = require('../common/util.js');
+  var utilService = require('../common/util');
 
   function compareStringsCI(a, b) {
     a = a.toLowerCase();
@@ -980,7 +980,7 @@ angularModule.directive('searchHighlighter', function($document, $window) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
-      var textile = require('../common/textile.js');
+      var textile = require('../common/textile');
 
       scope.$watch(attrs.searchHighlighter, function(value) {
         // Empty the element

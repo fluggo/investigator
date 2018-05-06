@@ -1,8 +1,8 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 
 const BUNYAN_INDEX_ALIAS = 'bunyan';
 const BUNYAN_TYPE = 'bunyan';

@@ -1,7 +1,7 @@
 'use strict';
 
 const readline = require('readline');
-const es = require('../server/es.js');
+const es = require('../server/es');
 const d3 = require('d3');
 
 const esDateFormat = d3.timeFormat('%Y.%m.%d');

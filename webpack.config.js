@@ -2,7 +2,7 @@
 
 const packageJson = require('./package.json');
 const path = require('path');
-const configFile = require('./server/config.js');
+const configFile = require('./server/config');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');

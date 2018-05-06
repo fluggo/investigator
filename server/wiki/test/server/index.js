@@ -6,10 +6,10 @@ const chai = require('chai'), expect = chai.expect;
 
 const async = require('async');
 
-const es = require('../../../es.js');
+const es = require('../../../es');
 const wiki = require('../../../wiki');
-const indexMaint = require('../../index-maint.js');
-const wikiUtil = require('../../util.js');
+const indexMaint = require('../../index-maint');
+const wikiUtil = require('../../util');
 const uuid = require('uuid/v4');
 const d3 = require('d3');
 const extend = require('extend');
@@ -182,8 +182,8 @@ module.exports.createWikiTestArticles = createWikiTestArticles;
 module.exports.getAllWikiHistory = getAllWikiHistory;
 
 describe('Wiki server library', function() {
-  require('./prepareArticleSync.js');
-  require('./createWikiQuery.js');
+  require('./prepareArticleSync');
+  require('./createWikiQuery');
 
   describe('getArticleById', function() {
     beforeEach(function(done) {
@@ -466,8 +466,8 @@ describe('Wiki server library', function() {
 
   });
 
-  require('./createArticle.js');
-  require('./updateArticle.js');
+  require('./createArticle');
+  require('./updateArticle');
 
   describe('deleteArticle', function() {
     beforeEach(function(done) {
@@ -1273,4 +1273,4 @@ this is a second #hashtag:value`;
   });
 });
 
-require('./wsapi.js');
+require('./wsapi');

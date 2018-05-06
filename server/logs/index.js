@@ -1,15 +1,15 @@
 'use strict';
 
-const bunyan = require('./bunyan.js');
-const wsa = require('./wsa.js');
-const appstatus = require('./appstatus.js');
-const msvista = require('./msvista.js');
-const syslog = require('./syslog.js');
-const sql = require('./sql.js');
-const cylance = require('./cylance.js');
-const dns = require('./dns.js');
+const bunyan = require('./bunyan');
+const wsa = require('./wsa');
+const appstatus = require('./appstatus');
+const msvista = require('./msvista');
+const syslog = require('./syslog');
+const sql = require('./sql');
+const cylance = require('./cylance');
+const dns = require('./dns');
 const async = require('async');
-const es = require('../es.js');
+const es = require('../es');
 
 function setTemplates(callback) {
   async.parallel([

@@ -3,10 +3,10 @@
 var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
-var wikiUtil = require('../../../common/util.js');
+var wikiUtil = require('../../../common/util');
 var diff = require('diff');
 var CodeMirror = require('codemirror');
-require('codemirror/addon/hint/show-hint.js');
+require('codemirror/addon/hint/show-hint');
 
 module.service('wikiHinter', function(app, alerts, $log) {
   var _knownTags = d3.map();
@@ -241,7 +241,7 @@ function diffTags(oldTags, newTags) {
 
 // Textile-parsing service
 module.service('textile', function($window, $document, app) {
-  var textile = require('../../../common/textile.js');
+  var textile = require('../../../common/textile');
 
   var attrWhitelist = d3.set([
     'class', 'lang', 'id', 'align', 'colspan', 'rowspan',

@@ -1,13 +1,13 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const msvista = require('./msvista.js');
-const cylance = require('./cylance.js');
-const bunyan = require('./bunyan.js');
-const wsa = require('./wsa.js');
-const sql = require('./sql.js');
-const syslog = require('./syslog.js');
-const appstatus = require('./appstatus.js');
+const wsapi = require('../wsapi');
+const msvista = require('./msvista');
+const cylance = require('./cylance');
+const bunyan = require('./bunyan');
+const wsa = require('./wsa');
+const sql = require('./sql');
+const syslog = require('./syslog');
+const appstatus = require('./appstatus');
 
 function canSearchWsa(user) {
   return user.getSettings().userControls.wsa && user.getSettings().userControls.wsa.search;

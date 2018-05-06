@@ -2,10 +2,10 @@
 
 const d3 = require('d3');
 const async = require('async');
-const es = require('../es.js');
-const util = require('../../common/util.js');
+const es = require('../es');
+const util = require('../../common/util');
 const Netmask = require('netmask').Netmask;
-const config = require('../config.js');
+const config = require('../config');
 
 const NETFLOW_TEMPLATE = {
   template: 'netflow-*',
@@ -387,7 +387,7 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
   };
 }
 
-const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
+const parseQueryTerms = require('../wiki/util').parseQueryTerms;
 
 const INTERVALS = [1, 2, 5, 10, 15, 20, 30, 60, 120, 4 * 60, 6 * 60, 24 * 60];
 

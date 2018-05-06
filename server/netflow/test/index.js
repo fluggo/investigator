@@ -3,10 +3,10 @@
 'use strict';
 
 const chai = require('chai'), expect = chai.expect;
-const netflow = require('../index.js');
+const netflow = require('../index');
 
 describe('Relative date utils', function() {
-  const util = require('../../../common/util.js');
+  const util = require('../../../common/util');
 
   describe('parseRelativeDate function', function() {
     it('parses dates', function() {

@@ -3,7 +3,7 @@
 'use strict';
 
 const chai = require('chai'), expect = chai.expect;
-const config = require('../config.js');
+const config = require('../config');
 
 describe('Logger', function() {
   // BJC: This test will remain here as an example of testing logging, but in reality

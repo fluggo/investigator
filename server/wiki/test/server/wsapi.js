@@ -4,16 +4,16 @@
 
 const chai = require('chai'), expect = chai.expect;
 
-const wikiUtil = require('../../util.js');
-const test = require('./index.js');
-const indexMaint = require('../../index-maint.js');
+const wikiUtil = require('../../util');
+const test = require('./index');
+const indexMaint = require('../../index-maint');
 const async = require('async');
-const wiki = require('../../index.js');
+const wiki = require('../../index');
 const d3 = require('d3');
-const config = require('../../../config.js');
+const config = require('../../../config');
 const users = require('../../../users');
 const wsapi = require('../../../wsapi');
-require('../../wsapi.js');
+require('../../wsapi');
 
 function callWsapi(id, user, data, callback, notifyCallback) {
   return wsapi.emit(id, {user: user, data: data, log: config.logger}, callback, notifyCallback || function() {});

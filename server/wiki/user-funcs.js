@@ -1,12 +1,12 @@
 'use strict';
 
-const config = require('../config.js');
+const config = require('../config');
 const logger = config.logger.child({module: 'ldap/user-funcs'});
 const path = require('path');
 const d3 = require('d3');
-const utilFuncs = require('../../common/util.js');
+const utilFuncs = require('../../common/util');
 
-const filewatch = require('../filewatch.js');
+const filewatch = require('../filewatch');
 
 var _firstScript = true;
 
@@ -108,7 +108,7 @@ function defaultMakeWikiQuickSearchTerms(source) {
 }
 
 const ldap = require('../ldap');
-const wiki = require('./index.js');
+const wiki = require('./index');
 
 function findLdapByDN(dn, callback) {
 }

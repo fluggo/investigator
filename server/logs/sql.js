@@ -1,11 +1,11 @@
 'use strict';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+const es = require('../es');
+const logCommon = require('./common');
+const config = require('../config');
 const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+const util = require('../../common/util');
+const logColumns = require('../../common/logcolumns');
 
 const SQL_INDEX_ALIAS = 'sqllog';
 const SQL_TYPE = 'sqllog';
@@ -285,7 +285,7 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
 function searchSqlLogs(query, callback) {
   var startTime = util.createRelativeDate(query.start, false);
   var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
+  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
   let domainSet = [];
   const esQuery = createSqlQuery(parseQueryTerms(query.q), {}, startTime, endTime, domainSet);
   const sortColumn = logColumns.sqlColumnsByName.get(query.sortProp);

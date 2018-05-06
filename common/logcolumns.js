@@ -1,8 +1,8 @@
 'use strict';
 
 const d3 = require('d3');
-const d3filters = require('./d3filters.js');
-const util = require('./util.js');
+const d3filters = require('./d3filters');
+const util = require('./util');
 
 const CAT_STAND = 'Standard';
 const CAT_ALL = 'Identifiers';
@@ -722,7 +722,7 @@ module.exports.msvistaColumnsByName = d3.map(module.exports.msvistaColumns, d =>
 
 const WSA_CATEGORY_MAP = d3.map();
 
-require('./wsacat.js').forEach(function(cat) {
+require('./wsacat').forEach(function(cat) {
   WSA_CATEGORY_MAP.set('IW_' + cat.id, cat);
 });
 

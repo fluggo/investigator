@@ -4,7 +4,7 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-const logColumns = require('../../../common/logcolumns.js');
+const logColumns = require('../../../common/logcolumns');
 
 module.directive('logTable', function factory($log, $location, $sniffer, $parse, app, d3service) {
   return {
