@@ -1,0 +1,19 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "module": "commonjs",
+    "noEmit": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true
+  },
+  "include": [
+    "server/**/*",
+    "common/**/*",
+    "scripts/**/*"
+  ]
+}
