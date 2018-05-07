@@ -1,5 +1,5 @@
 {
-  "name": "Investigator",
+  "name": "investigator",
   "version": "1.0.0",
   "description": "Elasticsearch-based log search and wiki application",
   "author": {
