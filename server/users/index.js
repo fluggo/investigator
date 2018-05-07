@@ -44,6 +44,7 @@ function get(upn, callback) {
     user = new User('default_user', {
       userControls: {
         admin: true,
+        editUsers: true,
         wiki: {
           view: true,
           edit: true,
