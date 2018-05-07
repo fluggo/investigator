@@ -1,19 +1,18 @@
 // Useful docs
 // See: https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/api-reference-2-0.html
 
-'use strict';
-
-const d3 = require('d3');
-const async = require('async');
-const stream = require('stream');
-const EventEmitter = require('events');
-const config = require('./config');
+import d3 = require('d3-time-format');
+import async = require('async');
+import stream = require('stream');
+import { EventEmitter } from 'events';
+import config = require('./config');
 const logger = config.logger;
 
-const _esclient = new require('elasticsearch').Client(config.elasticsearch);
+import elasticsearch = require('elasticsearch');
+const _esclient = new elasticsearch.Client(config.elasticsearch);
 
 // Mapping for the "common" object
-const COMMON_MAPPING = {
+export const COMMON_MAPPING = {
   properties: {
     name: {
       type: 'text',
@@ -107,7 +106,7 @@ const COMMON_MAPPING = {
   }
 };
 
-const COMMON_ANALYSIS = {
+export const COMMON_ANALYSIS = {
   tokenizer: {
     autocomplete_filter: {
       type: "edge_ngram",
@@ -140,52 +139,54 @@ const COMMON_ANALYSIS = {
   },
 };
 
+type InnerHit = elasticsearch.SearchResponse<object>['hits']['hits'];
+
 // Returns a stream (EventEmitter with data, error, and end) that
 // scrolls through all the entries in the given index
-function getEntriesStream(options) {
+export function getEntriesStream(options?: elasticsearch.SearchParams): stream.Readable {
   let fetchedItems = 0;
-  let _scroll_id = null;
+  let _scroll_id: string | undefined = undefined;
   let _inProgress = false, _done = false;
 
-  let resultStream = new stream.Readable({
+  const resultStream = new stream.Readable({
     objectMode: true,
     read: read
   });
 
   //console.log('start');
 
-  const query = {
+  const query: elasticsearch.SearchParams = {
     sort: ['_doc'],
     scroll: '30s',
     body: { query: { match_all: {} } }
   };
 
-  for(let key of Object.keys(options || {}))
-    query[key] = options[key] || query[key];
+  if(options)
+    Object.assign(query, options);
 
-  function read() {
+  function read(): void {
     if(_inProgress || _done)
       return;
 
     _inProgress = true;
 
     if(!_scroll_id) {
-      _esclient.search(query, getMoreEntries);
+      return _esclient.search(query, getMoreEntries);
     }
     else {
-      _esclient.scroll({
+      return _esclient.scroll({
         scrollId: _scroll_id,
         scroll: '30s'
       }, getMoreEntries);
     }
   }
 
-  function getMoreEntries(err, resp) {
+  function getMoreEntries(err: any, resp: elasticsearch.SearchResponse<object>): void {
     //console.log('getMoreEntries');
     _inProgress = false;
 
     if(err)
-      return resultStream.emit('error', err);
+      return resultStream.emit('error', err), undefined;
 
     _scroll_id = resp._scroll_id;
 
@@ -213,24 +214,24 @@ function getEntriesStream(options) {
 }
 
 // Fetches all the entries in the given index as an array
-function getAllEntries(options, callback) {
+export function getAllEntries(options: elasticsearch.SearchParams, callback: (err: any, data: InnerHit[]) => void) {
   const entriesStream = getEntriesStream(options);
-  const data = [];
+  const data: elasticsearch.SearchResponse<object>['hits']['hits'][] = [];
 
   entriesStream.once('error', callback);
-  entriesStream.on('data', function(obj) {
+  entriesStream.on('data', (obj: InnerHit) => {
     //console.log('keeping data');
     data.push(obj);
   });
-  entriesStream.once('end', function() {
+  entriesStream.once('end', () => {
     //console.log('calling end callback');
-    callback(null, data);
+    return callback(null, data);
   });
 }
 
 // Gets an array of index names in the wiki-write alias
-function getAliasIndices(alias, callback) {
-  return _esclient.indices.getAlias({name: alias}, function(err, response) {
+export function getAliasIndices(alias: string, callback: (err: any, indexes?: string[]) => void): void {
+  return _esclient.indices.getAlias({name: alias}, (err, response) => {
     if(err) {
       if(err.status === '404' || err.status === 404)
         return callback(null, []);
@@ -242,30 +243,57 @@ function getAliasIndices(alias, callback) {
   });
 }
 
-function getClusterHealth(callback) {
+export function getClusterHealth(callback: (error: any, response: any) => void) {
   _esclient.cluster.health({level: 'indices'}, callback);
 }
 
-function getClusterState(callback) {
+export function getClusterState(callback: (error: any, response: any) => void) {
   _esclient.cluster.state({metric: ['master_node', 'nodes', 'metadata']}, callback);
 }
 
-function getClusterStats(callback) {
+export function getClusterStats(callback: (error: any, response: any) => void) {
   _esclient.cluster.stats({}, callback);
 }
 
-function getBulkIndexStream(options) {
+interface BulkAction {
+  action: { index: object } | { create: object } | { delete: object } | { update: object },
+  doc: object
+}
+
+interface BulkIndexStreamOptions {
+  /** Option for refreshing the index atfer each write.
+   * 
+   * For best performance, set this to false and refresh manually after the indexing is finished.
+   */
+  refresh?: elasticsearch.Refresh,
+
+  /** Default type to upload to if one isn't specified in the bulk item. */
+  type?: string,
+
+  /** Default index to upload to if one isn't specified in the bulk item. */
+  index?: string,
+
+  /** Number of bytes to send in each bulk index request. Defaults to 10 MiB. */
+  bulkSize?: number
+}
+
+export function getBulkIndexStream(options: BulkIndexStreamOptions): stream.Writable {
+  interface QueueItem {
+    text: string,
+    callback: Function | null
+  }
+
   options = options || {};
   var _bulkSize = options.bulkSize || 10 * 1024 * 1024;
-  const _queue = [];
+  const _queue: QueueItem[] = [];
   var _indexInProgress = false;
 
-  function write(chunk, encoding, callback) {
+  function write(chunk: BulkAction, encoding: string, callback: Function) {
     //console.log('write chunk');
     writev([{chunk: chunk}], callback);
   }
 
-  function writev(chunks, callback) {
+  function writev(chunks: ReadonlyArray<{ chunk: BulkAction }>, callback: Function) {
     //console.log('writev chunk');
 
     _queue.push(...chunks.map((chunk, i) => {
@@ -281,7 +309,7 @@ function getBulkIndexStream(options) {
     }
   }
 
-  function startIndex() {
+  function startIndex(): void {
     //console.log('\nStarting another index...');
 
     let count = 0;
@@ -299,12 +327,12 @@ function getBulkIndexStream(options) {
 
     //console.log(`Indexing ${items.length} items (${_queue.length} remaining)...`);
 
-    _esclient.bulk({
+    return _esclient.bulk({
       refresh: options.refresh,
       type: options.type,
       index: options.index,
       body: items.map(c => c.text).join('')
-    }, (err, result) => {
+    }, (err: any, result: any) => {
       if(err) {
         logger.warn({messageId: 'server/es/bulk-load/error', err: err}, 'Elasticsearch bulk load failed.');
 
@@ -326,7 +354,7 @@ function getBulkIndexStream(options) {
         for(let i = 0; i < items.length; i++) {
           if(!result.items[i].create || result.items[i].create.status === 201) {
             if(items[i].callback)
-              items[i].callback();
+              items[i].callback!();
 
             continue;
           }
@@ -337,7 +365,7 @@ function getBulkIndexStream(options) {
           else {
             //log.warn({messageId: 'lib/es/bulk-load/item-error', status: result.items[i].create.status, action: items[i].text}, 'Item failed for unknown reason.');
             if(items[i].callback)
-              items[i].callback(new Error(`Item failed due to ${result.items[i].create.status} error.`));
+              items[i].callback!(new Error(`Item failed due to ${result.items[i].create.status} error.`));
           }
         }
       }
@@ -365,58 +393,83 @@ function getBulkIndexStream(options) {
   });
 }
 
-// A mechanism for fast-loading a new static index
-//
-// options is {alias: 'alias', mapping: {}}
-function StaticIndexer(options) {
-  if(!options.alias)
-    throw new Error('Failed to find "alias" parameter');
+interface StaticIndexerOptions {
+  /**
+   * The alias to switch to this new index upon completion. Any indexes already
+   * referenced by this alias will be removed.
+   *
+   * The index will be named based on this alias plus a timestamp.
+   */
+  alias: string,
 
-  if(!options.mapping)
-    throw new Error('Failed to find "mapping" parameter');
+  /** The mapping for the new index. */
+  mapping: object,
 
-  // 24H date format down to the millisecond for marking active indices
-  // We go to the millisecond
-  const DATE_MINUTE_FORMAT = d3.timeFormat('%Y-%m-%d-%H-%M-%S-%L');
-  const INDEX_NAME = options.alias + '-' + DATE_MINUTE_FORMAT(new Date());
+  /**
+   * Number of bulk index operations to attempt at once. This depends on the
+   * capacity of your cluster. Defaults to 2.
+   */
+  concurrency?: number
+}
 
-  const CONCURRENCY = 2;
-  let nextStreamIndex = 0;
+/** A mechanism for fast-loading a new index. */
+export class StaticIndexer {
+  private readonly queues: stream.Writable[];
+  private readonly indexName: string;
+  private readonly mapping: object;
+  private readonly alias: string;
+  private pushed = 0;
+  private indexed = 0;
+  private doneFunc: Function | null = null;
+  private nextStreamIndex = 0;
 
-  const queues = [...new Array(CONCURRENCY)].map(a => getBulkIndexStream({ index: INDEX_NAME }));
+  constructor(options: StaticIndexerOptions) {
+    if(!options.alias)
+      throw new Error('Failed to find "alias" parameter');
 
-  let doneFunc = null;
-  let pushed = 0, indexed = 0;
+    if(!options.mapping)
+      throw new Error('Failed to find "mapping" parameter');
 
-  function writeProgress() {
-    process.stdout.write(`Wrote ${indexed}/${pushed}...\r`);
+    // 24H date format down to the millisecond for marking active indices
+    // We go to the millisecond
+    const DATE_MINUTE_FORMAT = d3.timeFormat('%Y-%m-%d-%H-%M-%S-%L');
+    const CONCURRENCY = options.concurrency || 2;
+
+    this.indexName = `${options.alias}-${DATE_MINUTE_FORMAT(new Date())}`;
+    this.queues = [...new Array(CONCURRENCY)].map(a => getBulkIndexStream({ index: this.indexName }));
+    this.mapping = options.mapping;
+    this.alias = options.alias;
   }
 
-  function push(doc, id, type) {
-    pushed++;
-    writeProgress();
+  private writeProgress(): void {
+    process.stdout.write(`Wrote ${this.indexed}/${this.pushed}...\r`);
+  }
 
-    ++nextStreamIndex;
+  push(doc: object, id: string, type: string): void {
+    this.pushed++;
+    this.writeProgress();
 
-    if(nextStreamIndex >= queues.length)
-      nextStreamIndex = 0;
+    ++this.nextStreamIndex;
 
-    queues[nextStreamIndex].write({action: { index: {_type: type, _id: id}}, doc: doc}, null, err => {
-      indexed++;
-      writeProgress();
+    if(this.nextStreamIndex >= this.queues.length)
+      this.nextStreamIndex = 0;
+
+    return this.queues[this.nextStreamIndex].write({action: { index: {_type: type, _id: id}}, doc: doc}, undefined, (err: any) => {
+      this.indexed++;
+      this.writeProgress();
 
       if(err) {
         console.error('Error while indexing into elasticsearch:', err);
         return;
       }
-    });
+    }), undefined;
   }
 
-  function createIndex(callback) {
-    console.error(`Creating index ${INDEX_NAME}...`)
+  createIndex(callback: (error: any, response: any, status: any) => void): void {
+    console.error(`Creating index ${this.indexName}...`)
 
-    _esclient.indices.create({
-      index: INDEX_NAME,
+    return _esclient.indices.create({
+      index: this.indexName,
       body: {
         settings: {
           // Disable refresh while we're loading
@@ -427,35 +480,37 @@ function StaticIndexer(options) {
           // Common analyzer
           analysis: COMMON_ANALYSIS,
         },
-        mappings: options.mapping,
+        mappings: this.mapping,
       }
     }, callback);
   }
 
-  function refreshIndex(callback) {
+  private refreshIndex(callback: (error: any, response: any) => void): void {
     console.error('Refreshing index...');
-    _esclient.indices.refresh({ index: INDEX_NAME }, callback);
+    return _esclient.indices.refresh({ index: this.indexName }, callback);
   }
 
-  function optimizeIndex(callback) {
+  private optimizeIndex(callback: (error: any, response: any, status: any) => void): void {
     console.error('Force-merging index...');
-    _esclient.indices.forcemerge({ index: INDEX_NAME, maxNumSegments: 1, requestTimeout: 120000 }, callback);
+    return _esclient.indices.forcemerge({ index: this.indexName, maxNumSegments: 1, requestTimeout: 120000 }, callback);
   }
 
-  function switchAliases(callback) {
+  private switchAliases(callback: (error: any, response: any) => void): void {
     console.error('Switching the aliases...');
 
-    getAliasIndices(options.alias, function(err, readIndexes) {
+    getAliasIndices(this.alias, (err, readIndexes) => {
       if(err)
-        return callback(err);
+        return callback(err, undefined);
 
-      var actions = [
-        { add: { index: INDEX_NAME, alias: options.alias } },
+      var actions: elasticsearch.IndicesUpdateAliasesParamsAction[] = [
+        { add: { index: this.indexName, alias: this.alias } },
       ];
 
-      readIndexes.forEach(function(index) {
-        actions.push({ remove: { index: index, alias: options.alias } });
-      });
+      if(readIndexes) {
+        readIndexes.forEach(index => {
+          actions.push({ remove: { index: index, alias: this.alias } });
+        });
+      }
 
       _esclient.indices.updateAliases({
         body: {
@@ -465,10 +520,10 @@ function StaticIndexer(options) {
     });
   }
 
-  function waitForElasticSearch(callback) {
+  private waitForElasticSearch(callback: (err: any) => void): void {
     console.error('Waiting for Elasticsearch to finish...');
 
-    return async.parallel(queues.map((q, i) => (callback => {
+    return async.parallel(this.queues.map((q, i) => ((callback: (err?: object) => void) => {
       return q.end(() => {
         //console.log(`ended ${i}`);
         callback();
@@ -476,28 +531,14 @@ function StaticIndexer(options) {
     })), callback);
   }
 
-  function end(callback) {
+  end(callback: (err: any) => void): void {
     return async.series([
-      waitForElasticSearch,
-      refreshIndex,
-      optimizeIndex,
-      switchAliases,
+      this.waitForElasticSearch,
+      this.refreshIndex,
+      this.optimizeIndex,
+      this.switchAliases,
     ], callback);
   }
-
-  this.createIndex = createIndex;
-  this.push = push;
-  this.end = end;
 }
 
-module.exports.client = _esclient;
-module.exports.getClusterHealth = getClusterHealth;
-module.exports.getClusterState = getClusterState;
-module.exports.getClusterStats = getClusterStats;
-module.exports.getEntriesStream = getEntriesStream;
-module.exports.getAllEntries = getAllEntries;
-module.exports.getAliasIndices = getAliasIndices;
-module.exports.StaticIndexer = StaticIndexer;
-module.exports.getBulkIndexStream = getBulkIndexStream;
-module.exports.COMMON_MAPPING = COMMON_MAPPING;
-module.exports.COMMON_ANALYSIS = COMMON_ANALYSIS;
+export const client = _esclient;
