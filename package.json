@@ -6,6 +6,10 @@
     "name": "Brian J. Crowell",
     "email": "brian@fluggo.com"
   },
+  "scripts": {
+    "start": "node server",
+    "test": "node_modules/.bin/mocha \"server/test/*.js\""
+  },
   "contributors": [],
   "devDependencies": {
     "angular": "^1.5.5",

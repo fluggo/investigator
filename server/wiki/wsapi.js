@@ -254,7 +254,7 @@ function getLatestWikiMap(callback) {
 
 getLatestWikiMap();
 
-setInterval(getLatestWikiMap, 10 * 60 * 1000);
+setInterval(getLatestWikiMap, 10 * 60 * 1000).unref();
 
 wsapi.service.on('wiki/update-wiki-map', function(request, callback, notifyCallback) {
   return getLatestWikiMap(callback);

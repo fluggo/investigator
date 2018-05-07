@@ -17,7 +17,7 @@ function loadConfig() {
   }
   catch(e) {
     console.error('Failed to load configuration file.');
-    throw e;
+    config = {};
   }
 
   // Full path to the www files

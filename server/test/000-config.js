@@ -19,3 +19,8 @@ config.reloadConfig({
 require('../wiki/test');
 require('../users/test');
 require('../netflow/test');
+
+after(function() {
+  // Close Elasticsearch so we can exit
+  require('../es').client.close();
+});
