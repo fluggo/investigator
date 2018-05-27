@@ -1,20 +1,29 @@
-'use strict';
+export class LogError extends Error {
+  code: string;
 
-function LogError(message, code) {
-  Error.captureStackTrace(this, this.constructor);
-  this.name = this.constructor.name;
-  this.message = message;
-  this.code = code;
+  constructor(message: string, code: string) {
+    super(message);
+    Object.setPrototypeOf(this, LogError.prototype);
+    this.code = code;
+  }
 }
 
-require('util').inherits(LogError, Error);
-
-function base64ToNumber(str) {
+export function base64ToNumber(str: string) {
   var data = new Buffer(str, 'base64');
   return data.readUIntLE(0, data.length);
 }
 
-const LOG_COMMON = {
+export interface SearchQuery {
+  q: string;
+  start: string;
+  end: string;
+  sortProp: string;
+  sortOrder: 'asc' | 'desc';
+  size: number;
+  from: number;
+}
+
+export const LOG_COMMON = {
   properties: {
     recordFinder: {
       type: 'keyword',
@@ -88,8 +97,3 @@ const LOG_COMMON = {
     },
   }
 };
-
-module.exports.LogError = LogError;
-module.exports.base64ToNumber = base64ToNumber;
-module.exports.LOG_COMMON = LOG_COMMON;
-

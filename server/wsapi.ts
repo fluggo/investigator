@@ -3,6 +3,9 @@
  * @module wsapi
  */
 import { EventEmitter } from 'events';
+import * as ws from 'ws';
+import * as users from './users';
+import config = require('./config');
 
 interface ResponseCallback {
   /**
@@ -17,6 +20,12 @@ interface NotifyCallback {
   (data: any): void;
 }
 
+interface Request {
+  user: users.User;
+  log: typeof config.logger;
+  data: any;
+}
+
 interface RequestListener {
   /**
    * Listener for a websocket request.
@@ -27,7 +36,7 @@ interface RequestListener {
    * @param responseCallback - MUST be called when the request is complete.
    * @param notifyCallback - Can be called to send notifications about the request to the client.
    */
-  (request: any, responseCallback: ResponseCallback, notifyCallback: NotifyCallback): void;
+  (request: Request, responseCallback: ResponseCallback, notifyCallback: NotifyCallback): void;
 }
 
 class ApiEventEmitter extends EventEmitter {
@@ -53,7 +62,7 @@ class Service extends ApiEventEmitter {
     this._sockets = new Map<string, any>();
   }
 
-  registerSocket(socket) : void {
+  registerSocket(socket: ws) : void {
     const uuid = socket.upgradeReq.uuid;
 
     this._sockets.set(uuid, socket);
@@ -65,7 +74,7 @@ class Service extends ApiEventEmitter {
     this.emit('socket-connected', this, socket);
   }
 
-  broadcast(type: string, data): void {
+  broadcast(type: string, data: any): void {
     for(let socket of this._sockets.values()) {
       socket.send(JSON.stringify({type: type, data: data}));
     }

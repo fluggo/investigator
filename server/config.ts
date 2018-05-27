@@ -25,10 +25,16 @@ class Config {
    */
   secure: boolean;
 
-  /** Subdirectory at which the site will be hosted. */
+  /** Subdirectory at which the site will be hosted.
+   *
+   * This should begin and end with a forward slash.
+   */
   subdir: string;
 
-  /** Subdirectory at which the forms part of the site will be hosted. */
+  /** Subdirectory at which the forms part of the site will be hosted.
+   *
+   * This should begin and end with a forward slash.
+   */
   formsSubdir: string;
 
   /**
@@ -57,13 +63,13 @@ class Config {
   /** Logging configuration. */
   logging: {
     /** Log as Bunyan JSON stream over TCP */
-    "bunyan-tcp": {
+    "bunyan-tcp"?: {
       server: string;
       port: number;
     };
 
     /** Log as Bunyan JSON stream to stdout */
-    stdout: {
+    stdout?: {
       level?: bunyan.LogLevel;
     },
 
@@ -72,6 +78,12 @@ class Config {
 
   /** Service key for external services to authenticate. */
   serviceKey?: string;
+
+  /**
+   * Used mainly by the test harness to set a prefix for all indices so they
+   * don't collide with real indexes.
+   */
+  indexPrefix?: string;
 }
 
 class PublishedConfig extends Config {
@@ -98,7 +110,18 @@ class PublishedConfig extends Config {
     }
     catch(e) {
       console.error('Failed to load configuration file.');
-      throw e;
+      config = {
+        hostname: 'localhost',
+        port: 80,
+        secure: false,
+        subdir: '/',
+        formsSubdir: '/forms/',
+        disableSecurity: false,
+        elasticsearch: {},
+        number_of_shards: 1,
+        mail: { transportOptions: '' },
+        logging: {},
+      };
     }
 
     // Full path to the www files
@@ -148,12 +171,12 @@ class PublishedConfig extends Config {
       };
     }
 
-    if(config.logging && config.logging['bunyan-tcp']) {
-      let logConfig = config.logging['bunyan-tcp'];
+    const bunyanTcpConfig = config.logging && config.logging['bunyan-tcp'];
 
+    if(bunyanTcpConfig) {
       logStreams.push({
         level: 'debug',
-        stream: require('bunyan-tcp').createBunyanStream({server: logConfig.server, port: logConfig.port}),
+        stream: require('bunyan-tcp').createBunyanStream({server: bunyanTcpConfig.server, port: bunyanTcpConfig.port}),
         type: 'raw',
         closeOnExit: true
       });

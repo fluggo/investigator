@@ -1,14 +1,14 @@
 Error.stackTraceLimit = Infinity;
 process.title = 'InfoSec Investigator';
 
-import express = require('express');
-import async = require('async');
-import path = require('path');
+import * as express from 'express';
+import * as async from 'async';
+import * as path from 'path';
 const packageJson = require('../package.json');
-import uuid = require('uuid/v4');
+import * as uuid from 'uuid/v4';
 
-import wsapi = require('./wsapi');
-import dns = require('dns');
+import * as wsapi from './wsapi';
+import * as dns from 'dns';
 
 wsapi.on('dns/reverse', function(request, callback, notifyCallback) {
   dns.reverse(request.data.ip, (err: NodeJS.ErrnoException, hostnames: string[]) => {
@@ -63,7 +63,7 @@ require('./netflow/wsapi');
 require('./cylance/wsapi');
 require('./logs/wsapi')
 const netflow = require('./netflow');
-const users = require('./users');
+import * as users from './users';
 const logs = require('./logs');
 const url = require('url');
 
@@ -223,9 +223,9 @@ router.get('*', function(req, res) {
   return sendIndexFile(res);
 });
 
-import http = require('http');
-import ws = require('ws');
-import helmet = require('helmet');
+import * as http from 'http';
+import * as ws from 'ws';
+import * as helmet from 'helmet';
 
 function startServer(callback: (err: any) => void) {
   const app = express();
@@ -264,10 +264,12 @@ function startServer(callback: (err: any) => void) {
   /** Type for adding internal properties to express requests. */
   interface InternalRequest extends express.Request {
     /** Logger child associated with the request. */
-    log: typeof logger,
+    log: typeof logger;
 
     /** Unique ID of this request. */
-    uuid: string
+    uuid: string;
+
+    user: users.User;
   }
 
   // Report errors to Bunyan
@@ -339,7 +341,7 @@ function startServer(callback: (err: any) => void) {
 
     // Send the first update, which is the list of valid client versions
     socket.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
-    upgradeReq.user.registerSocket(ws);
+    upgradeReq.user.registerSocket(socket);
 
     socket.on('message', function(rawMessage) {
       const message = JSON.parse(rawMessage);

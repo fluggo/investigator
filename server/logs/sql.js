@@ -60,6 +60,7 @@ const SQLLOG_TEMPLATE = {
             PropertyName: { type: 'keyword' },
             PropertyValue: { type: 'keyword' },
             TargetObjectName: { type: 'keyword' },
+            TargetUserName: { type: 'keyword' },
             TargetLoginName: { type: 'keyword' },
             SessionLoginName: { type: 'keyword' },
             SID: { type: 'keyword' },

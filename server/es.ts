@@ -1,14 +1,16 @@
 // Useful docs
 // See: https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/api-reference-2-0.html
 
-import d3 = require('d3-time-format');
-import async = require('async');
-import stream = require('stream');
+import * as d3 from 'd3-time-format';
+import * as async from 'async';
+import * as stream from 'stream';
 import { EventEmitter } from 'events';
 import config = require('./config');
 const logger = config.logger;
 
-import elasticsearch = require('elasticsearch');
+import * as elasticsearch from 'elasticsearch';
+export * from 'elasticsearch';
+
 const _esclient = new elasticsearch.Client(config.elasticsearch);
 
 // Mapping for the "common" object
@@ -139,7 +141,7 @@ export const COMMON_ANALYSIS = {
   },
 };
 
-type InnerHit = elasticsearch.SearchResponse<object>['hits']['hits'];
+export type InnerHit = elasticsearch.SearchResponse<object>['hits']['hits'][0];
 
 // Returns a stream (EventEmitter with data, error, and end) that
 // scrolls through all the entries in the given index
@@ -216,7 +218,7 @@ export function getEntriesStream(options?: elasticsearch.SearchParams): stream.R
 // Fetches all the entries in the given index as an array
 export function getAllEntries(options: elasticsearch.SearchParams, callback: (err: any, data: InnerHit[]) => void) {
   const entriesStream = getEntriesStream(options);
-  const data: elasticsearch.SearchResponse<object>['hits']['hits'][] = [];
+  const data: InnerHit[] = [];
 
   entriesStream.once('error', callback);
   entriesStream.on('data', (obj: InnerHit) => {

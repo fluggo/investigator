@@ -1,10 +1,9 @@
-'use strict';
 
-const wsapi = require('../wsapi');
-const users = require('./index');
+import * as wsapi from '../wsapi';
+import * as users from './index';
 
-function canEditUsers(user) {
-  return user.getSettings().userControls.editUsers;
+function canEditUsers(user: users.User): boolean {
+  return !!user.getSettings().userControls.editUsers;
 }
 
 wsapi.on('user/set-user-settings', function(request, callback, notifyCallback) {
@@ -21,8 +20,8 @@ wsapi.on('user/set-user-controls', function(request, callback, notifyCallback) {
   }
 
   // Set the entry userControls in the object; this belongs to the admin
-  users.get(request.data.upn, (err, user) => {
-    if(err)
+  users.getUser(request.data.upn, (err, user) => {
+    if(err || !user)
       return callback(err);
 
     var settings = user.getSettings();
@@ -36,7 +35,7 @@ wsapi.on('user/get-list', function(request, callback, notifyCallback) {
 });
 
 wsapi.on('user/get', function(request, callback, notifyCallback) {
-  return users.get(request.data.upn, (err, result) => {
+  return users.getUser(request.data.upn, (err, result) => {
     if(err)
       return callback(err);
 
@@ -54,7 +53,7 @@ wsapi.on('user/delete', function(request, callback, notifyCallback) {
     return callback(new Error('Request denied.'));
   }
 
-  return users.delete(request.data.upn, callback);
+  return users.deleteUser(request.data.upn, callback);
 });
 
 wsapi.on('user/create', function(request, callback, notifyCallback) {
@@ -63,5 +62,5 @@ wsapi.on('user/create', function(request, callback, notifyCallback) {
     return callback(new Error('Request denied.'));
   }
 
-  return users.create(request.data.upn, request.data.settings, callback);
+  return users.createUser(request.data.upn, request.data.settings, callback);
 });
