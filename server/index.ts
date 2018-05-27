@@ -431,7 +431,7 @@ function startServer(callback: (err: any) => void) {
     // Send the first update, which is the list of valid client versions
     socket.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
     socket.send(JSON.stringify({type: 'wiki/memory-map', data: require('./wiki/index-maint').getMemoryMapPublishedVersionSync()})) ;
-    wsapi.service.registerSocket(ws);
+    wsapi.service.registerSocket(socket);
 
     socket.on('message', function(rawMessage) {
       const message = JSON.parse(rawMessage);
