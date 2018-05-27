@@ -20,13 +20,13 @@ interface NotifyCallback {
   (data: any): void;
 }
 
-interface Request {
+interface Request<T = {}> {
   user: users.User;
   log: typeof config.logger;
-  data: any;
+  data: T;
 }
 
-interface RequestListener {
+interface RequestListener<T = {}> {
   /**
    * Listener for a websocket request.
    * @param request - Request from the client.
@@ -36,7 +36,7 @@ interface RequestListener {
    * @param responseCallback - MUST be called when the request is complete.
    * @param notifyCallback - Can be called to send notifications about the request to the client.
    */
-  (request: Request, responseCallback: ResponseCallback, notifyCallback: NotifyCallback): void;
+  (request: Request<T>, responseCallback: ResponseCallback, notifyCallback: NotifyCallback): void;
 }
 
 class ApiEventEmitter extends EventEmitter {
@@ -45,7 +45,7 @@ class ApiEventEmitter extends EventEmitter {
    * @param event - Name of the API call to register for.
    * @param listener - Function to call when the client sends a request to this endpoint.
    */
-  on(event: string, listener: RequestListener) {
+  on<T = {}>(event: string, listener: RequestListener<T>) {
     return super.on(event, listener);
   }
 }
