@@ -1,13 +1,11 @@
-'use strict';
+import * as d3time from 'd3-time';
+import * as async from 'async';
+import * as es from '../es';
+import * as util from '../../common/util';
+import { Netmask } from 'netmask';
+import config = require('../config');
 
-const d3 = require('d3');
-const async = require('async');
-const es = require('../es');
-const util = require('../../common/util');
-const Netmask = require('netmask').Netmask;
-const config = require('../config');
-
-const NETFLOW_TEMPLATE = {
+export const NETFLOW_TEMPLATE: any = {
   template: 'netflow-*',
   settings: {
     'index.codec': 'best_compression',
@@ -140,6 +138,45 @@ const NETFLOW_TEMPLATE = {
   }
 };
 
+interface NetflowEntry {
+  netflow9: {
+    "@timestamp": Date | string;
+    receivedTime: Date | string;
+    reporting_ip: string;
+    startTime: Date | string;
+    observationTime: Date | string;
+    flowStart: Date | string;
+    first_switched: Date | string;
+    last_switched: Date | string;
+    direction: number;
+    dst_mask: number;
+    src_mask: number;
+
+    ipv4_dst_addr: string;
+    ipv4_src_addr: string;
+    ipv4_next_hop: string;
+
+    icmpCodeIPv4: number;
+    icmpTypeIPv4: number;
+
+    in_bytes: number;
+    in_permanent_bytes: number;
+    in_permanent_pkts: number;
+    in_pkts: number;
+
+    protocol: number;
+
+    tcp_flags?: {
+      urg: boolean;
+      ack: boolean;
+      psh: boolean;
+      rst: boolean;
+      syn: boolean;
+      fin: boolean;
+    }
+  }
+}
+
 /*
   Important fields:
     reporting_ip
@@ -164,22 +201,36 @@ const NETFLOW_TEMPLATE = {
     username
 */
 
-const PROTO_ICMP = 1, PROTO_TCP = 6, PROTO_UDP = 17, PROTO_EIGRP = 88, PROTO_GRE = 47, PROTO_IGMP = 2, PROTO_PIM = 103;
+enum Protocol {
+  ICMP = 1,
+  IGMP = 2,
+  TCP = 6,
+  UDP = 17,
+  GRE = 47,
+  EIGRP = 88,
+  PIM = 103,
+}
+
+const enum TcpFlag {
+  RST = 'rst',
+  PSH = 'psh',
+  SYN = 'syn',
+  ACK = 'ack',
+  URG = 'urg',
+  FIN = 'fin',
+}
 
 // Create the query for the given query text and tag mappings
-function createNetflowQuery(terms, startTime, endTime, reportingIp) {
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createNetflowQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date, reportingIp: string | null) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             '@timestamp': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -189,8 +240,8 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
         {
           range: {
             '@timestamp': {
-              gte: d3.timeMinute.floor(startTime),
-              lt: d3.timeMinute.ceil(endTime),
+              gte: d3time.timeMinute.floor(startTime),
+              lt: d3time.timeMinute.ceil(endTime),
             }
           }
         },
@@ -228,7 +279,7 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
   // Lists of terms
   const ipTest = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(\/\d{1,2})?$/;
 
-  function ipQuery(ip, srcdst) {
+  function ipQuery(ip: string, srcdst?: 'src' | 'dst') {
     var options = [];
 
     if(!srcdst || srcdst === 'src')
@@ -243,7 +294,7 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
     return { bool: { should: options, minimum_should_match: 1 } };
   }
 
-  function ipRangeQuery(block, srcdst) {
+  function ipRangeQuery(block: Netmask, srcdst?: 'src' | 'dst') {
     var options = [];
 
     if(!srcdst || srcdst === 'src')
@@ -258,7 +309,7 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
     return { bool: { should: options, minimum_should_match: 1 } };
   }
 
-  function portQuery(port, srcdst) {
+  function portQuery(port: number, srcdst?: 'src' | 'dst') {
     var options = [];
 
     if(!srcdst || srcdst === 'src')
@@ -273,18 +324,18 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
     return { bool: { should: options, minimum_should_match: 1 } };
   }
 
-  function protoQuery(proto) {
+  function protoQuery(proto: Protocol) {
     return { term: { protocol: proto } };
   }
 
-  function tcpFlagQuery(flag) {
+  function tcpFlagQuery(flag: TcpFlag) {
     return { term: { ['tcp_flags.' + flag]: true } };
   }
 
   terms.forEach(function(term) {
     if(term.type === 'term') {
       if(ipTest.test(term.term)) {
-        let block = new Netmask(term.term);
+        const block = new Netmask(term.term);
 
         if(block.bitmask === 32)
           result.bool[term.req].push(ipQuery(block.base));
@@ -292,43 +343,43 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
           result.bool[term.req].push(ipRangeQuery(block));
       }
       else if(term.term === 'udp') {
-        result.bool[term.req].push(protoQuery(PROTO_UDP));
+        result.bool[term.req].push(protoQuery(Protocol.UDP));
       }
       else if(term.term === 'tcp') {
-        result.bool[term.req].push(protoQuery(PROTO_TCP));
+        result.bool[term.req].push(protoQuery(Protocol.TCP));
       }
       else if(term.term === 'icmp') {
-        result.bool[term.req].push(protoQuery(PROTO_ICMP));
+        result.bool[term.req].push(protoQuery(Protocol.ICMP));
       }
       else if(term.term === 'igmp') {
-        result.bool[term.req].push(protoQuery(PROTO_IGMP));
+        result.bool[term.req].push(protoQuery(Protocol.IGMP));
       }
       else if(term.term === 'gre') {
-        result.bool[term.req].push(protoQuery(PROTO_GRE));
+        result.bool[term.req].push(protoQuery(Protocol.GRE));
       }
       else if(term.term === 'eigrp') {
-        result.bool[term.req].push(protoQuery(PROTO_EIGRP));
+        result.bool[term.req].push(protoQuery(Protocol.EIGRP));
       }
       else if(term.term === 'pim') {
-        result.bool[term.req].push(protoQuery(PROTO_PIM));
+        result.bool[term.req].push(protoQuery(Protocol.PIM));
       }
       else if(term.term === 'tcp.rst') {
-        result.bool[term.req].push(tcpFlagQuery('rst'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.RST));
       }
       else if(term.term === 'tcp.syn') {
-        result.bool[term.req].push(tcpFlagQuery('syn'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.SYN));
       }
       else if(term.term === 'tcp.ack') {
-        result.bool[term.req].push(tcpFlagQuery('ack'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.ACK));
       }
       else if(term.term === 'tcp.psh') {
-        result.bool[term.req].push(tcpFlagQuery('sph'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.PSH));
       }
       else if(term.term === 'tcp.urg') {
-        result.bool[term.req].push(tcpFlagQuery('urg'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.URG));
       }
       else if(term.term === 'tcp.fin') {
-        result.bool[term.req].push(tcpFlagQuery('fin'));
+        result.bool[term.req].push(tcpFlagQuery(TcpFlag.FIN));
       }
       else {
         console.log('Failed to parse ' + term.term);
@@ -351,28 +402,28 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
         result.bool[term.req].push(ipRangeQuery(block, 'src'));
     }
     else if(term.type === 'port') {
-      term.term = +term.term;
+      const port = +term.term;
 
-      if(!Number.isNaN(term.term))
-        result.bool[term.req].push(portQuery(term.term));
+      if(!Number.isNaN(port))
+        result.bool[term.req].push(portQuery(port));
     }
     else if(term.type === 'dstport' || term.type === 'destport') {
-      term.term = +term.term;
+      const port = +term.term;
 
-      if(!Number.isNaN(term.term))
-        result.bool[term.req].push(portQuery(term.term, 'dst'));
+      if(!Number.isNaN(port))
+        result.bool[term.req].push(portQuery(port, 'dst'));
     }
     else if(term.type === 'srcport') {
-      term.term = +term.term;
+      const port = +term.term;
 
-      if(!Number.isNaN(term.term))
-        result.bool[term.req].push(portQuery(term.term, 'src'));
+      if(!Number.isNaN(port))
+        result.bool[term.req].push(portQuery(port, 'src'));
     }
     else if(term.type === 'proto') {
-      term.term = +term.term;
+      const port = +term.term;
 
-      if(!Number.isNaN(term.term))
-        result.bool[term.req].push(protoQuery(term.term));
+      if(!Number.isNaN(port))
+        result.bool[term.req].push(protoQuery(port));
     }
   });
 
@@ -387,11 +438,14 @@ function createNetflowQuery(terms, startTime, endTime, reportingIp) {
   };
 }
 
-const parseQueryTerms = require('../wiki/util').parseQueryTerms;
-
 const INTERVALS = [1, 2, 5, 10, 15, 20, 30, 60, 120, 4 * 60, 6 * 60, 24 * 60];
 
-function chooseInterval(start, end) {
+/**
+ * Chooses the number of minutes between data points to meet a maximum of 1500 data points.
+ * @param start Start date.
+ * @param end End date.
+ */
+function chooseInterval(start: Date, end: Date): number {
   // Max 1500 data points
   const GOAL = 1500;
   const minutes = (end.getTime() - start.getTime()) / 60000;
@@ -410,13 +464,21 @@ function chooseInterval(start, end) {
 }
 
 
-function search(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  var newQuery = createNetflowQuery(parseQueryTerms(query.q), startTime, endTime, query.reportingIp);
-  var globalQuery = createNetflowQuery(parseQueryTerms(query.q), startTime, endTime);
+export function search(query: util.NetflowSearchQuery, callback: (err: any, results?: es.SearchResponse<NetflowEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
 
-  var interval = chooseInterval(startTime, endTime);
+  if(!startTime)
+    return callback(new Error('Invalid start date for the query.'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new Error('Invalid end date for the query.'));
+
+  var newQuery = createNetflowQuery(util.parseQueryTerms(query.q), startTime, endTime, query.reportingIp);
+  var globalQuery = createNetflowQuery(util.parseQueryTerms(query.q), startTime, endTime, null);
+
+  const interval = chooseInterval(startTime, endTime);
 
   const aggs = {
     by_time: {
@@ -563,7 +625,7 @@ function search(query, callback) {
     }
   };
 
-  es.client.search({
+  es.client.search<NetflowEntry>({
     index: 'netflow',
     type: 'netflow9',
     body: {
@@ -574,7 +636,7 @@ function search(query, callback) {
   }, callback);
 }
 
-function setTemplate(callback) {
+export function setTemplate(callback: (err: any) => void) {
   es.client.indices.putTemplate({
     name: 'netflow-template',
     body: NETFLOW_TEMPLATE,
@@ -582,8 +644,8 @@ function setTemplate(callback) {
 }
 
 
-function healthCheck(callback) {
-  es.client.search({
+export function healthCheck(callback: (err: any, results?: es.SearchResponse<NetflowEntry>) => void) {
+  es.client.search<NetflowEntry>({
     index: 'netflow',
     type: 'netflow9',
     body: {
@@ -635,11 +697,19 @@ function healthCheck(callback) {
 }
 
 
-function rawSearch(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  var newQuery = createNetflowQuery(parseQueryTerms(query.q), startTime, endTime, query.reportingIp || '0.0.0.0');
-  var globalQuery = createNetflowQuery(parseQueryTerms(query.q), startTime, endTime);
+export function rawSearch(query: util.NetflowSearchQuery, callback: (err: any, results?: es.SearchResponse<NetflowEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new Error('Invalid start date for the query.'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new Error('Invalid end date for the query.'));
+
+  var newQuery = createNetflowQuery(util.parseQueryTerms(query.q), startTime, endTime, query.reportingIp || '0.0.0.0');
+  var globalQuery = createNetflowQuery(util.parseQueryTerms(query.q), startTime, endTime, null);
 
   var interval = chooseInterval(startTime, endTime);
 
@@ -661,7 +731,7 @@ function rawSearch(query, callback) {
     }
   };
 
-  return es.client.search({
+  return es.client.search<NetflowEntry>({
     index: 'netflow',
     type: 'netflow9',
     body: {
@@ -673,11 +743,3 @@ function rawSearch(query, callback) {
     },
   }, callback);
 }
-
-
-module.exports.createNetflowQuery = createNetflowQuery;
-module.exports.parseQueryTerms = parseQueryTerms;
-module.exports.search = search;
-module.exports.rawSearch = rawSearch;
-module.exports.setTemplate = setTemplate;
-module.exports.healthCheck = healthCheck;

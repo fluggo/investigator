@@ -723,3 +723,36 @@ export function parseQueryTerms(query: string): QueryTerm[] {
 
   return result;
 }
+
+export interface SearchQuery {
+  /** The search query. */
+  q: string;
+
+  /** Relative date specifier for the start date ("now", "-3d/h"). */
+  start: string;
+
+  /** Relative date specifier for the end date ("now", "-3d/h"). */
+  end: string;
+
+  /** Property to sort by. */
+  sortProp: string;
+
+  /** The sort order. */
+  sortOrder: 'asc' | 'desc';
+
+  /** Number of results to return. */
+  size: number;
+
+  /** Offset into the result set. */
+  from: number;
+}
+
+export interface NetflowSearchQuery extends SearchQuery {
+  /** IP of the Netflow sample point. */
+  reportingIp: string;
+}
+
+export interface DocumentID {
+  index: string;
+  id: string;
+}

@@ -344,7 +344,7 @@ function createVistaQuery(terms: util.QueryTerm[], startTime: Date, endTime: Dat
   return result;
 }
 
-export function searchVistaLogs(query: logCommon.SearchQuery, callback: (err: any, resp?: es.SearchResponse<VistaLogEntry>) => void) {
+export function searchVistaLogs(query: util.SearchQuery, callback: (err: any, resp?: es.SearchResponse<VistaLogEntry>) => void) {
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)
@@ -377,7 +377,7 @@ export function searchVistaLogs(query: logCommon.SearchQuery, callback: (err: an
   }, callback);
 }
 
-export function findVistaLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
+export function findVistaLogByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   const splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
@@ -479,7 +479,7 @@ export function getVistaLogStats(callback) {
   }, callback);
 }
 
-export function findAdminLogins(query: logCommon.SearchQuery, callback) {
+export function findAdminLogins(query: util.SearchQuery, callback) {
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)

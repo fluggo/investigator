@@ -51,11 +51,15 @@ export interface Settings {
       edit: boolean | 'propose';
     };
 
+    netflow?: {
+      view?: boolean;
+    };
+
     /** Settings controlling access to WSA log data. */
     wsa?: {
       /** True if allowed to search WSA log data. */
       search?: boolean;
-    }
+    };
 
     /** Used only in the tests. */
     blink?: 'blonk';

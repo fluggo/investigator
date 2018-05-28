@@ -13,34 +13,6 @@ export function base64ToNumber(str: string) {
   return data.readUIntLE(0, data.length);
 }
 
-export interface SearchQuery {
-  /** The search query. */
-  q: string;
-
-  /** Relative date specifier for the start date ("now", "-3d/h"). */
-  start: string;
-
-  /** Relative date specifier for the end date ("now", "-3d/h"). */
-  end: string;
-
-  /** Property to sort by. */
-  sortProp: string;
-
-  /** The sort order. */
-  sortOrder: 'asc' | 'desc';
-
-  /** Number of results to return. */
-  size: number;
-
-  /** Offset into the result set. */
-  from: number;
-}
-
-export interface DocumentID {
-  index: string;
-  id: string;
-}
-
 export const LOG_COMMON = {
   properties: {
     recordFinder: {

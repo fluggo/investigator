@@ -155,7 +155,7 @@ export const CYLANCE_TEMPLATE: any = {
   }
 };
 
-export function findCylanceLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
+export function findCylanceLogByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
@@ -332,7 +332,7 @@ function createCylanceQuery(terms: util.QueryTerm[], startTime: Date, endTime: D
   return result;
 }
 
-export function searchCylanceLogs(query: logCommon.SearchQuery, callback: (err: any, response?: es.SearchResponse<CylanceLogEntry>) => void) {
+export function searchCylanceLogs(query: util.SearchQuery, callback: (err: any, response?: es.SearchResponse<CylanceLogEntry>) => void) {
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)

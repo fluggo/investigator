@@ -9,8 +9,9 @@ import * as uuid from 'uuid/v4';
 
 import * as wsapi from './wsapi';
 import * as dns from 'dns';
+import * as util from '../common/util';
 
-wsapi.on('dns/reverse', function(request, callback, notifyCallback) {
+wsapi.on<{ip: string}>('dns/reverse', function(request, callback, notifyCallback) {
   dns.reverse(request.data.ip, (err: NodeJS.ErrnoException, hostnames: string[]) => {
     // Don't report ENOTFOUND as an error
     if(err && err.code === 'ENOTFOUND')
@@ -20,7 +21,7 @@ wsapi.on('dns/reverse', function(request, callback, notifyCallback) {
   });
 });
 
-wsapi.on('raw/search', function(request, callback, notifyCallback) {
+wsapi.on<util.SearchQuery>('raw/search', function(request, callback, notifyCallback) {
   if(!request.user.getSettings().userControls.editUsers) {
     request.log.error(`User ${request.user.upn} tried to do a raw search for "${request.data.q}".`);
     return callback(new Error('Request denied.'));
@@ -55,17 +56,17 @@ wsapi.on('cluster/stats', function(request, callback, notifyCallback) {
 import _config = require('./config');
 const logger = _config.logger;
 
-const es = require('./es');
+import * as es from './es';
 require('./wiki/wsapi');
 require('./ldap/wsapi');
-require('./users/wsapi')
-require('./netflow/wsapi');
+import './users/wsapi';
+import './netflow/wsapi';
 require('./cylance/wsapi');
-require('./logs/wsapi')
-const netflow = require('./netflow');
+import './logs/wsapi';
+import * as netflow from './netflow';
 import * as users from './users';
-const logs = require('./logs');
-const url = require('url');
+import * as logs from './logs';
+import * as url from 'url';
 
 var router = express.Router({
   // Route names are case-sensitive
@@ -136,11 +137,17 @@ function sendIndexFile(res: express.Response) {
 
 // App root, with some special handling for log entry requests
 router.get('/', function(req, res) {
-  const parsedUrl = url.parse(req.url, true);
+  const parsedUrl = new url.URL(req.url);
 
-  if(parsedUrl.query.bl) {
-    return logs.findBunyanByLocator(parsedUrl.query.bl, (err, result) => {
-      if(err)
+  const bl = parsedUrl.searchParams.get('bl');
+  const vl = parsedUrl.searchParams.get('vl');
+  const wsa = parsedUrl.searchParams.get('wsa');
+  const cy = parsedUrl.searchParams.get('cy');
+  const sq = parsedUrl.searchParams.get('sq');
+
+  if(bl) {
+    return logs.findBunyanByLocator(bl, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -153,9 +160,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.vl) {
-    return logs.findVistaLogByLocator(parsedUrl.query.vl, (err, result) => {
-      if(err)
+  if(vl) {
+    return logs.findVistaLogByLocator(vl, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -168,9 +175,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.wsa) {
-    return logs.findWsaLogByLocator(parsedUrl.query.wsa, (err, result) => {
-      if(err)
+  if(wsa) {
+    return logs.findWsaLogByLocator(wsa, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -183,9 +190,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.cy) {
-    return logs.findCylanceLogByLocator(parsedUrl.query.cy, (err, result) => {
-      if(err)
+  if(cy) {
+    return logs.findCylanceLogByLocator(cy, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -199,9 +206,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.sq) {
-    return logs.findSqlLogByLocator(parsedUrl.query.sq, (err, result) => {
-      if(err)
+  if(sq) {
+    return logs.findSqlLogByLocator(sq, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -290,16 +297,21 @@ function startServer(callback: (err: any) => void) {
 
       try {
         // Use headers to find username from upstream reverse proxy
-        let remoteUser = req.headers['proxy-user'];
+        let remoteUser = util.asScalar(req.headers['proxy-user']);
 
         if(_config.disableSecurity)
           remoteUser = 'default_user';
+
+        if(!remoteUser) {
+          req.log.error(`Remote user not specified in "proxy-user" header. Be sure you have the reverse proxy configured correctly.`);
+          return callback(false);
+        }
 
         req.uuid = uuid();
         req.log = logger.child({webRequestId: req.uuid, remoteUser: remoteUser});
         req.log.info({req: {method: req.method, headers: req.headers, url: req.url}}, 'Begin _service/main websocket');
 
-        let user = users.get(remoteUser, (err, user) => {
+        let user = users.getUser(remoteUser, (err, user) => {
           if(!user) {
             req.log.warn(`Unknown user "${remoteUser}"`);
             return callback(false, 403, `Unknown user "${remoteUser}"`);
@@ -327,7 +339,7 @@ function startServer(callback: (err: any) => void) {
       const error: any = {};
 
       Object.getOwnPropertyNames(value).forEach(function(key) {
-        error[key] = value[key];
+        error[key] = (value as any)[key];
       });
 
       return error;
@@ -404,7 +416,8 @@ function startServer(callback: (err: any) => void) {
 
       try {
         // Fetch Bearer token
-        const remoteKey = req.headers['authorization'] && req.headers['authorization'].substr(7);
+        const authHeader = req.headers['authorization'];
+        const remoteKey = authHeader && authHeader.substr(7);
 
         req.uuid = uuid();
         req.log = logger.child({webRequestId: req.uuid});

@@ -97,7 +97,7 @@ export const SQLLOG_TEMPLATE = {
   }
 };
 
-export function findSqlLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
+export function findSqlLogByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
@@ -275,7 +275,7 @@ function createSqlQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date,
   return result;
 }
 
-export function searchSqlLogs(query: logCommon.SearchQuery, callback: (err: any, response?: es.SearchResponse<SqlLogEntry>) => void) {
+export function searchSqlLogs(query: util.SearchQuery, callback: (err: any, response?: es.SearchResponse<SqlLogEntry>) => void) {
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)

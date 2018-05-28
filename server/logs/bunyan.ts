@@ -67,7 +67,7 @@ export const BUNYAN_TEMPLATE: any = {
   }
 };
 
-export function findBunyanByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
+export function findBunyanByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {

@@ -172,7 +172,7 @@ function createSyslogQuery(terms: util.QueryTerm[], startTime: Date, endTime: Da
   return result;
 }
 
-export function searchSyslogLogs(query: logCommon.SearchQuery, callback: (err: any, resp?: es.SearchResponse<BaseLogEntry>) => void) {
+export function searchSyslogLogs(query: util.SearchQuery, callback: (err: any, resp?: es.SearchResponse<BaseLogEntry>) => void) {
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)
