@@ -5,7 +5,7 @@
 const chai = require('chai'), expect = chai.expect;
 
 describe('LDAP utils:', function() {
-  const util = require('../../common/util.js');
+  const util = require('../../common/util');
 
   describe('parseDN:', function() {
     it('parses basic DNs', function() {

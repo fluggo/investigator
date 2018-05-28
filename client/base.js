@@ -580,7 +580,7 @@ uiModule.directive('basePopoverTarget', function(dialogService) {
 // ** base.d3filters -- D3 filters.
 
 var d3filtersModule = angular.module('base.d3filters', []);
-var d3filters = require('../common/d3filters.js');
+var d3filters = require('../common/d3filters');
 
 d3filtersModule.service('d3service', function() {
   this.number = d3filters.number;

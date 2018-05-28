@@ -1,16 +1,15 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
-const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+import * as logColumns from '../../common/logcolumns';
 
 const DNS_INDEX_ALIAS = 'dns';
 const DNS_TYPE = 'dns';
 
-const DNS_TEMPLATE = {
+export const DNS_TEMPLATE: any = {
   template: 'dns-*',
   settings: {
     'index.codec': 'best_compression',
@@ -53,6 +52,3 @@ const DNS_TEMPLATE = {
     [DNS_INDEX_ALIAS]: {},
   }
 };
-
-
-module.exports.DNS_TEMPLATE = DNS_TEMPLATE;

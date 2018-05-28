@@ -1,6 +1,6 @@
 'use strict';
 
-const logger = require('../config.js').logger.child({module: 'wiki'});
+const logger = require('../config').logger.child({module: 'wiki'});
 
 function WikiError(message, code) {
   Error.captureStackTrace(this, this.constructor);
@@ -14,13 +14,13 @@ require('util').inherits(WikiError, Error);
 module.exports.WikiError = WikiError;
 module.exports.logger = logger;
 
-const wikiUtil = require('../../common/util.js');
-const textile = require('../../common/textile.js');
-const indexMaint = require('./index-maint.js');
+const wikiUtil = require('../../common/util');
+const textile = require('../../common/textile');
+const indexMaint = require('./index-maint');
 const Netmask = require('netmask').Netmask;
 
-const _config = require('../config.js').wiki || {};
-const PREFIX = require('../config.js').indexPrefix || '';
+const _config = require('../config').wiki || {};
+const PREFIX = require('../config').indexPrefix || '';
 const WIKI_READ_ALIAS = PREFIX + 'wiki-read';
 const WIKI_WRITE_ALIAS = PREFIX + 'wiki-write';
 const ARTICLE = 'article';
@@ -67,90 +67,6 @@ module.exports.ARTICLE = ARTICLE;
 module.exports.ARTICLE_HISTORY = ARTICLE_HISTORY;
 module.exports.PREFIX = PREFIX;
 
-
-function parseQueryTerms(query) {
-  // Produces an array of terms:
-  // { term: 'term text', type: 'term', req: 'should' }
-  // type is:
-  //    'term' - ordinary word for match
-  //    'phrase' - phrase match
-  //    other - prefixed term/phrase with "name:stuff" -> type: 'name', term: 'stuff'
-  // req is:
-  //    'should' - result should have this
-  //    'must' - result must have this (prefix "+")
-  //    'must_not' - result
-
-  const QUERY_RE = /[-+]?(?:[^\s:]+:)?"[^""]+"|[^\s]+/g;
-  const result = [];
-  let match = null;
-
-  while((match = QUERY_RE.exec(query)) !== null) {
-    let qstr = match[0];
-
-    // Check for must/must not
-    let must = (qstr[0] === '+');
-    let must_not = (qstr[0] === '-');
-
-    if(must || must_not) {
-      qstr = qstr.substr(1);
-    }
-
-    let phrase = (qstr[0] === '"');
-    let query = null;
-
-    if(phrase) {
-      qstr = qstr.substr(1, qstr.length - 2);
-
-      result.push({
-        term: qstr,
-        type: 'phrase',
-        req: must ? 'must' : (must_not ? 'must_not' : 'should'),
-      });
-
-      continue;
-    }
-
-    if(qstr[0] === '#') {
-      // Hashtag
-      qstr = qstr.substr(1);
-
-      result.push({
-        term: qstr,
-        type: 'hashtag',
-        req: must ? 'must' : (must_not ? 'must_not' : 'should'),
-      });
-
-      continue;
-    }
-
-    let tagIndex = qstr.indexOf(':');
-
-    if(tagIndex !== -1) {
-      let type = qstr.substr(0, tagIndex), term = qstr.substr(tagIndex + 1);
-
-      if(term[0] === '"') {
-        // Un-phrase it
-        term = term.substr(1, term.length - 2);
-      }
-
-      result.push({
-        term: term,
-        type: type,
-        req: must ? 'must' : (must_not ? 'must_not' : 'should'),
-      });
-
-      continue;
-    }
-
-    result.push({
-      term: qstr,
-      type: 'term',
-      req: must ? 'must' : (must_not ? 'must_not' : 'should'),
-    });
-  }
-
-  return result;
-}
 
 function parseTagValue(type, value) {
   if(value === undefined || value === null)
@@ -576,7 +492,7 @@ function prepareArticleSync(article, options) {
   return { id: id, article: preparedArticle };
 }
 
-module.exports.parseQueryTerms = parseQueryTerms;
+module.exports.parseQueryTerms = wikiUtil.parseQueryTerms;
 module.exports.parseTagValue = parseTagValue;
 module.exports.createWikiQuery = createWikiQuery;
 module.exports.parseBodyForRefsSync = parseBodyForRefsSync;

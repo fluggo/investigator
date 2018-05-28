@@ -4,12 +4,12 @@
 
 const chai = require('chai'), expect = chai.expect;
 
-const wikiUtil = require('../../util.js');
-const test = require('./index.js');
-const indexMaint = require('../../index-maint.js');
+const wikiUtil = require('../../util');
+const test = require('./index');
+const indexMaint = require('../../index-maint');
 const async = require('async');
-const wiki = require('../../index.js');
-const es = require('../../../es.js');
+const wiki = require('../../index');
+const es = require('../../../es');
 
 describe('createArticle', function() {
   beforeEach(function(done) {

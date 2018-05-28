@@ -1,28 +1,27 @@
-'use strict';
-
 Error.stackTraceLimit = Infinity;
 process.title = 'InfoSec Investigator';
 
-const express = require('express');
-const async = require('async');
-const path = require('path');
+import * as express from 'express';
+import * as async from 'async';
+import * as path from 'path';
 const packageJson = require('../package.json');
-const uuid = require('uuid/v4');
+import * as uuid from 'uuid/v4';
 
+import * as wsapi from './wsapi';
+import * as dns from 'dns';
+import * as util from '../common/util';
 
-const wsapi = require('./wsapi.js');
-
-wsapi.on('dns/reverse', function(request, callback, notifyCallback) {
-  require('dns').reverse(request.data.ip, (err, result) => {
+wsapi.on<{ip: string}>('dns/reverse', function(request, callback, notifyCallback) {
+  dns.reverse(request.data.ip, (err: NodeJS.ErrnoException, hostnames: string[]) => {
     // Don't report ENOTFOUND as an error
     if(err && err.code === 'ENOTFOUND')
       return callback(null, null);
 
-    return callback(null, result);
+    return callback(null, hostnames);
   });
 });
 
-wsapi.on('raw/search', function(request, callback, notifyCallback) {
+wsapi.on<util.SearchQuery>('raw/search', function(request, callback, notifyCallback) {
   if(!request.user.getSettings().userControls.editUsers) {
     request.log.error(`User ${request.user.upn} tried to do a raw search for "${request.data.q}".`);
     return callback(new Error('Request denied.'));
@@ -54,20 +53,20 @@ wsapi.on('cluster/stats', function(request, callback, notifyCallback) {
   es.getClusterStats(callback);
 });
 
-const _config = require('./config.js');
+import _config = require('./config');
 const logger = _config.logger;
 
-const es = require('./es.js');
-require('./wiki/wsapi.js');
-require('./ldap/wsapi.js');
-require('./users/wsapi.js')
-require('./netflow/wsapi.js');
-require('./cylance/wsapi.js');
-require('./logs/wsapi.js')
-const netflow = require('./netflow');
-const users = require('./users');
-const logs = require('./logs');
-const url = require('url');
+import * as es from './es';
+require('./wiki/wsapi');
+require('./ldap/wsapi');
+import './users/wsapi';
+import './netflow/wsapi';
+require('./cylance/wsapi');
+import './logs/wsapi';
+import * as netflow from './netflow';
+import * as users from './users';
+import * as logs from './logs';
+import * as url from 'url';
 
 var router = express.Router({
   // Route names are case-sensitive
@@ -95,7 +94,7 @@ router.use('/js/', express.static(path.join(_config.rootPath, 'static'), {
 }));
 
 // Non-static files
-function nonStaticCacheControl(res, path, stat) {
+function nonStaticCacheControl(res: express.Response, path: any, stat: any): void {
   // Tell the browser it must check with us for a new version every time
   // ("no-cache" is another misnomer-- the browser and proxies are allowed
   // to cache the result, but they must check with us for a new version
@@ -119,7 +118,7 @@ router.all('/partials/*', function(req, res) {
   res.sendStatus(404);
 });
 
-function sendIndexFile(res) {
+function sendIndexFile(res: express.Response) {
   res.sendFile('index.html', {
     root: _config.rootPath,
     lastModified: false,
@@ -138,11 +137,17 @@ function sendIndexFile(res) {
 
 // App root, with some special handling for log entry requests
 router.get('/', function(req, res) {
-  const parsedUrl = url.parse(req.url, true);
+  const parsedUrl = new url.URL(req.url);
 
-  if(parsedUrl.query.bl) {
-    return logs.findBunyanByLocator(parsedUrl.query.bl, (err, result) => {
-      if(err)
+  const bl = parsedUrl.searchParams.get('bl');
+  const vl = parsedUrl.searchParams.get('vl');
+  const wsa = parsedUrl.searchParams.get('wsa');
+  const cy = parsedUrl.searchParams.get('cy');
+  const sq = parsedUrl.searchParams.get('sq');
+
+  if(bl) {
+    return logs.findBunyanByLocator(bl, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -155,9 +160,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.vl) {
-    return logs.findVistaLogByLocator(parsedUrl.query.vl, (err, result) => {
-      if(err)
+  if(vl) {
+    return logs.findVistaLogByLocator(vl, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -170,9 +175,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.wsa) {
-    return logs.findWsaLogByLocator(parsedUrl.query.wsa, (err, result) => {
-      if(err)
+  if(wsa) {
+    return logs.findWsaLogByLocator(wsa, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -185,9 +190,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.cy) {
-    return logs.findCylanceLogByLocator(parsedUrl.query.cy, (err, result) => {
-      if(err)
+  if(cy) {
+    return logs.findCylanceLogByLocator(cy, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -201,9 +206,9 @@ router.get('/', function(req, res) {
     });
   }
 
-  if(parsedUrl.query.sq) {
-    return logs.findSqlLogByLocator(parsedUrl.query.sq, (err, result) => {
-      if(err)
+  if(sq) {
+    return logs.findSqlLogByLocator(sq, (err, result) => {
+      if(err || !result)
         return res.status(500).send(err.toString());
 
       if(result.length === 0)
@@ -225,11 +230,11 @@ router.get('*', function(req, res) {
   return sendIndexFile(res);
 });
 
-function startServer(callback) {
-  const http = require('http');
-  const WebSocketServer = require('ws').Server;
-  const helmet = require('helmet');
+import * as http from 'http';
+import * as ws from 'ws';
+import * as helmet from 'helmet';
 
+function startServer(callback: (err: any) => void) {
   const app = express();
   const server = http.createServer();
 
@@ -246,11 +251,12 @@ function startServer(callback) {
   app.use(helmet.noSniff());
 
   // Replace json method so we can prepend Angular's CSRF-prevention prefix
-  function safejson(value) {
+  function safejson(this: express.Response, value?: any): express.Response {
     this.type('json');
 
     var result = JSON.stringify(value, app.get('json replacer'), app.get('json spaces'));
     this.send(")]}',\n" + result);
+    return this;
   }
 
   app.use(function(req, res, next) {
@@ -259,64 +265,81 @@ function startServer(callback) {
   });
 
   // Add in the application router
-  app.use(_config.formsSubdir, require('./forms.js').router);
+  app.use(_config.formsSubdir, require('./forms').router);
   app.use(_config.subdir, router);
 
+  /** Type for adding internal properties to express requests. */
+  interface InternalRequest extends express.Request {
+    /** Logger child associated with the request. */
+    log: typeof logger;
+
+    /** Unique ID of this request. */
+    uuid: string;
+
+    user: users.User;
+  }
+
   // Report errors to Bunyan
-  app.use(function(err, req, res, next) {
+  app.use(function(err, req: InternalRequest, res, next) {
     req.log.error({err: err}, 'Error during route.');
     next(err);
-  });
+  } as express.ErrorRequestHandler);
 
   // Set up the main web socket server.
   // These objects live alongside express, and talk to the underlying
   // http.Server object directly.
-  var wsServer = new WebSocketServer({
+  var wsServer = new ws.Server({
     server: server,
     path: _config.subdir + '_service/main',
-    disableHixie: true,
     perMessageDeflate: false,   // Compression + SSL = leakage, plus I think my implementation is broken
     verifyClient: (info, callback) => {
+      const req = info.req as InternalRequest;
+
       try {
         // Use headers to find username from upstream reverse proxy
-        let remoteUser = info.req.headers['proxy-user'];
+        let remoteUser = util.asScalar(req.headers['proxy-user']);
 
         if(_config.disableSecurity)
           remoteUser = 'default_user';
 
-        info.req.uuid = uuid();
-        info.req.log = logger.child({webRequestId: info.req.uuid, remoteUser: remoteUser});
-        info.req.log.info({req: {method: info.req.method, headers: info.req.headers, url: info.req.url}}, 'Begin _service/main websocket');
+        if(!remoteUser) {
+          req.log.error(`Remote user not specified in "proxy-user" header. Be sure you have the reverse proxy configured correctly.`);
+          return callback(false);
+        }
 
-        let user = users.get(remoteUser, (err, user) => {
+        req.uuid = uuid();
+        req.log = logger.child({webRequestId: req.uuid, remoteUser: remoteUser});
+        req.log.info({req: {method: req.method, headers: req.headers, url: req.url}}, 'Begin _service/main websocket');
+
+        let user = users.getUser(remoteUser, (err, user) => {
           if(!user) {
-            info.req.log.warn(`Unknown user "${remoteUser}"`);
+            req.log.warn(`Unknown user "${remoteUser}"`);
             return callback(false, 403, `Unknown user "${remoteUser}"`);
           }
 
           if(err) {
-            info.req.log.error({err: err}, `Server error"`);
+            req.log.error({err: err}, `Server error"`);
             return callback(false, 500, 'Server error: ' + err.message);
           }
 
-          info.req.user = user;
+          req.user = user;
           return callback(true);
         });
       }
       catch(err) {
-        logger.error({err: err, req: {method: info.req.method, headers: info.req.headers, url: info.req.url}}, 'Failed to verify client.')
-        callback(false);
+        logger.error({err: err, req: {method: req.method, headers: req.headers, url: req.url}}, 'Failed to verify client.')
+        return callback(false);
       }
     }
   });
 
   // http://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
-  function replaceErrors(key, value) {
+  function replaceErrors(key: any, value: any) {
     if(value instanceof Error) {
-      var error = {};
+      const error: any = {};
 
       Object.getOwnPropertyNames(value).forEach(function(key) {
-        error[key] = value[key];
+        error[key] = (value as any)[key];
       });
 
       return error;
@@ -325,79 +348,83 @@ function startServer(callback) {
     return value;
   }
 
-  wsServer.on('connection', function(ws) {
+  wsServer.on('connection', function(socket, rawreq) {
+    const upgradeReq = rawreq as InternalRequest;
+
     // Send the first update, which is the list of valid client versions
-    ws.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
-    ws.upgradeReq.user.registerSocket(ws);
+    socket.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
+    upgradeReq.user.registerSocket(socket);
 
-    ws.on('message', function(message) {
-      message = JSON.parse(message);
+    socket.on('message', function(rawMessage) {
+      const message = JSON.parse(rawMessage);
 
-      function responseCallback(err, response) {
-        if(ws.readyState !== ws.OPEN) {
-          return ws.upgradeReq.log.warn({messageName: message.name, readyState: ws.readyState}, 'Failed to send response, websocket was closed');
+      function responseCallback(err: any, response?: object): void {
+        if(socket.readyState !== ws.OPEN) {
+          return upgradeReq.log.warn({messageName: message.name, readyState: socket.readyState}, 'Failed to send response, websocket was closed');
         }
 
         if(err) {
-          ws.upgradeReq.log.warn({messageName: message.name, err: err, messageData: message.data}, `Error during ${message.name} WS request`);
+          upgradeReq.log.warn({messageName: message.name, err: err, messageData: message.data}, `Error during ${message.name} WS request`);
 
-          ws.send(JSON.stringify({type: 'cbrej', id: message.id, data: err}, replaceErrors), err => {
+          socket.send(JSON.stringify({type: 'cbrej', id: message.id, data: err}, replaceErrors), err => {
             if(err)
-              ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send error to client');
+              upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send error to client');
           });
         }
         else {
-          ws.send(JSON.stringify({type: 'cbres', id: message.id, data: response}, replaceErrors), err => {
+          socket.send(JSON.stringify({type: 'cbres', id: message.id, data: response}, replaceErrors), err => {
             if(err)
-              ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send response to client');
+              upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send response to client');
           });
         }
       }
 
-      function notifyCallback(notification) {
-        ws.send(JSON.stringify({type: 'cbnot', id: message.id, data: notification}, replaceErrors), err => {
-          ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send notification to client');
+      function notifyCallback(notification: object): void {
+        socket.send(JSON.stringify({type: 'cbnot', id: message.id, data: notification}, replaceErrors), err => {
+          upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send notification to client');
         });
       }
 
       if(message.type === 'cbreq') {
         // It's a request, try sending it to the wsapi listeners
-        ws.upgradeReq.log.info({messageName: message.name}, 'Received WSAPI request');
+        upgradeReq.log.info({messageName: message.name}, 'Received WSAPI request');
 
-        if(!wsapi.emit(message.name, {user: ws.upgradeReq.user, log: ws.upgradeReq.log, data: message.data}, responseCallback, notifyCallback)) {
+        if(!wsapi.emit(message.name, {user: upgradeReq.user, log: upgradeReq.log, data: message.data}, responseCallback, notifyCallback)) {
           // No listener was defined, send a reject
           responseCallback({message: `No listener defined for "${message.name}".`});
         }
       }
     });
 
-    ws.on('error', err => {
-      ws.upgradeReq.log.error({err: err}, 'Client or socket error');
+    socket.on('error', err => {
+      upgradeReq.log.error({err: err}, 'Client or socket error');
     });
 
-    ws.on('close', (code, message) => {
-      ws.upgradeReq.log.info({code: code, message: message}, 'Socket closed');
+    socket.on('close', (code, message) => {
+      upgradeReq.log.info({code: code, message: message}, 'Socket closed');
     });
   });
 
   // Set up the service web socket server. This is used for connections with
   // other server-side tools.
-  const wsServiceServer = new WebSocketServer({
+  const wsServiceServer = new ws.Server({
     server: server,
     path: _config.subdir + '_service/service',
-    disableHixie: true,
     perMessageDeflate: false,   // Compression + SSL = leakage, plus I think my implementation is broken
     verifyClient: (info, callback) => {
+      const req = info.req as InternalRequest;
+
       try {
         // Fetch Bearer token
-        const remoteKey = info.req.headers['authorization'] && info.req.headers['authorization'].substr(7);
+        const authHeader = req.headers['authorization'];
+        const remoteKey = authHeader && authHeader.substr(7);
 
-        info.req.uuid = uuid();
-        info.req.log = logger.child({webRequestId: info.req.uuid});
-        info.req.log.info({req: {method: info.req.method, headers: info.req.headers, url: info.req.url}}, 'Begin _service/service websocket');
+        req.uuid = uuid();
+        req.log = logger.child({webRequestId: req.uuid});
+        req.log.info({req: {method: req.method, headers: req.headers, url: req.url}}, 'Begin _service/service websocket');
 
         if(_config.serviceKey !== remoteKey) {
-          info.req.log.error({req: {method: info.req.method, headers: info.req.headers, url: info.req.url}}, `Failed to verify remote key to service websocket`);
+          req.log.error({req: {method: req.method, headers: req.headers, url: req.url}}, `Failed to verify remote key to service websocket`);
           return callback(false);
         }
 
@@ -405,65 +432,67 @@ function startServer(callback) {
       }
       catch(err) {
         console.log(err);
-        logger.error({err: err, req: {method: info.req.method, headers: info.req.headers, url: info.req.url}}, 'Failed to verify client.')
-        callback(false);
+        logger.error({err: err, req: {method: req.method, headers: req.headers, url: req.url}}, 'Failed to verify client.')
+        return callback(false);
       }
     }
   });
 
-  wsServiceServer.on('connection', function(ws) {
+  wsServiceServer.on('connection', function(socket, rawreq) {
+    const upgradeReq = rawreq as InternalRequest;
+
     // Send the first update, which is the list of valid client versions
-    ws.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
-    ws.send(JSON.stringify({type: 'wiki/memory-map', data: require('./wiki/index-maint.js').getMemoryMapPublishedVersionSync()})) ;
-    wsapi.service.registerSocket(ws);
+    socket.send(JSON.stringify({type: 'client-versions', versions: [packageJson.version]}));
+    socket.send(JSON.stringify({type: 'wiki/memory-map', data: require('./wiki/index-maint').getMemoryMapPublishedVersionSync()})) ;
+    wsapi.service.registerSocket(socket);
 
-    ws.on('message', function(message) {
-      message = JSON.parse(message);
+    socket.on('message', function(rawMessage) {
+      const message = JSON.parse(rawMessage);
 
-      function responseCallback(err, response) {
-        if(ws.readyState !== ws.OPEN) {
-          return ws.upgradeReq.log.warn({messageName: message.name, readyState: ws.readyState}, 'Failed to send response, websocket was closed');
+      function responseCallback(err: any, response?: object): void {
+        if(socket.readyState !== ws.OPEN) {
+          return upgradeReq.log.warn({messageName: message.name, readyState: socket.readyState}, 'Failed to send response, websocket was closed');
         }
 
         if(err) {
-          ws.upgradeReq.log.warn({messageName: message.name, err: err, messageData: message.data}, `Error during ${message.name} WS request`);
+          upgradeReq.log.warn({messageName: message.name, err: err, messageData: message.data}, `Error during ${message.name} WS request`);
 
-          ws.send(JSON.stringify({type: 'cbrej', id: message.id, data: err}, replaceErrors), err => {
+          socket.send(JSON.stringify({type: 'cbrej', id: message.id, data: err}, replaceErrors), err => {
             if(err)
-              ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send error to client');
+              upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send error to client');
           });
         }
         else {
-          ws.send(JSON.stringify({type: 'cbres', id: message.id, data: response}, replaceErrors), err => {
+          socket.send(JSON.stringify({type: 'cbres', id: message.id, data: response}, replaceErrors), err => {
             if(err)
-              ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send response to client');
+              upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send response to client');
           });
         }
       }
 
-      function notifyCallback(notification) {
-        ws.send(JSON.stringify({type: 'cbnot', id: message.id, data: notification}, replaceErrors), err => {
-          ws.upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send notification to client');
+      function notifyCallback(notification: object): void {
+        socket.send(JSON.stringify({type: 'cbnot', id: message.id, data: notification}, replaceErrors), err => {
+          upgradeReq.log.error({messageName: message.name, err: err}, 'Failed to send notification to client');
         });
       }
 
       if(message.type === 'cbreq') {
         // It's a request, try sending it to the wsapi listeners
-        ws.upgradeReq.log.info({messageName: message.name}, 'Received WSAPI request');
+        upgradeReq.log.info({messageName: message.name}, 'Received WSAPI request');
 
-        if(!wsapi.service.emit(message.name, {user: ws.upgradeReq.user, log: ws.upgradeReq.log, data: message.data}, responseCallback, notifyCallback)) {
+        if(!wsapi.service.emit(message.name, {user: upgradeReq.user, log: upgradeReq.log, data: message.data}, responseCallback, notifyCallback)) {
           // No listener was defined, send a reject
           responseCallback({message: `No listener defined for "${message.name}".`});
         }
       }
     });
 
-    ws.on('error', err => {
-      ws.upgradeReq.log.error({err: err}, 'Client or socket error');
+    socket.on('error', err => {
+      upgradeReq.log.error({err: err}, 'Client or socket error');
     });
 
-    ws.on('close', (code, message) => {
-      ws.upgradeReq.log.info({code: code, message: message}, 'Socket closed');
+    socket.on('close', (code, message) => {
+      upgradeReq.log.info({code: code, message: message}, 'Socket closed');
     });
   });
 
@@ -475,7 +504,7 @@ function startServer(callback) {
 // Start everything
 async.series([
   // Wait for wiki maintenance tasks to finish before we expose the site
-  cb => require('./wiki/index-maint.js').pushWriteQueue(null, cb),
+  cb => require('./wiki/index-maint').pushWriteQueue(null, cb),
   startServer,
 ], function(err) {
 });

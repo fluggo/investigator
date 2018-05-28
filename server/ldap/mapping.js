@@ -56,7 +56,7 @@ function guidBinaryToString(buffer) {
     decToHex(buffer.readUInt32BE(12), 8);
 }
 
-const ldap = require('./index.js');
+const ldap = require('./index');
 
 // Ticks (100-ns) offset from 1601-01-01 to 1970-01-01
 const BASE_TICKS = 116444736000000000;
@@ -331,7 +331,7 @@ const IGNORE_FIELDS = new Set([
   'logonCount',
 ]);
 
-const es = require('../es.js');
+const es = require('../es');
 
 const MAPPING = {
   'ldap-object': {

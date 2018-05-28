@@ -3,11 +3,11 @@
 'use strict';
 
 const async = require('async');
-const es = require('../es.js');
+const es = require('../es');
 const wiki = require('../wiki');
-const utilFuncs = require('../../common/util.js');
+const utilFuncs = require('../../common/util');
 
-const logger = require('../config.js').logger.child({module: 'ldap'});
+const logger = require('../config').logger.child({module: 'ldap'});
 
 function LdapError(message, code) {
   Error.captureStackTrace(this, this.constructor);

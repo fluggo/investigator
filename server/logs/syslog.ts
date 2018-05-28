@@ -1,16 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
-const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+import { BaseLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const SYSLOG_INDEX_ALIAS = 'raw-syslog';
 const SYSLOG_TYPE = 'raw-syslog';
 
-const RAW_SYSLOG_TEMPLATE = {
+export const RAW_SYSLOG_TEMPLATE = {
   template: 'raw-syslog-*',
   settings: {
     //'index.codec': 'best_compression',
@@ -35,21 +35,16 @@ const RAW_SYSLOG_TEMPLATE = {
   }
 };
 
-function createSyslogQuery(terms, options, startTime, endTime) {
-  options = options || {};
-
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createSyslogQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             'log.receivedTime': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -81,19 +76,17 @@ function createSyslogQuery(terms, options, startTime, endTime) {
     'log.message',
   ];
 
-  let filtered = { must: result.bool.filter, must_not: result.bool.must_not, should: result.bool.should };
-  let scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
+  const filtered = { must: result.bool.filter, must_not: result.bool.must_not, should: result.bool.should };
+  const scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
 
   // Collection of all terms sitting by themselves so they can be queried together
-  let lonelyShouldTerms = [];
+  const lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms, options) {
-    options = options || {};
-
+  function makeTerms(terms: string | string[], options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
     if(!Array.isArray(terms))
       terms = [terms];
 
-    const result = [
+    const result: any = [
       {
         multi_match: {
           query: terms.join(' '),
@@ -150,7 +143,9 @@ function createSyslogQuery(terms, options, startTime, endTime) {
     }
     else if(term.type === 'exists') {
       const existsColumn = logColumns.syslogColumnsByName.get(term.term);
-      filtered[term.req].push({ exists: { field: existsColumn.field } });
+
+      if(existsColumn)
+        filtered[term.req].push({ exists: { field: existsColumn.field } });
     }
     else if(column) {
       const esterm = column.toEsTerm(term.term);
@@ -177,14 +172,21 @@ function createSyslogQuery(terms, options, startTime, endTime) {
   return result;
 }
 
-function searchSyslogLogs(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
-  const esQuery = createSyslogQuery(parseQueryTerms(query.q), {}, startTime, endTime);
+export function searchSyslogLogs(query: util.SearchQuery, callback: (err: any, resp?: es.SearchResponse<BaseLogEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const esQuery = createSyslogQuery(util.parseQueryTerms(query.q), startTime, endTime);
   const sortColumn = logColumns.syslogColumnsByName.get(query.sortProp);
 
-  return es.client.search({
+  return es.client.search<BaseLogEntry>({
     index: 'raw-syslog',
     type: 'raw-syslog',
     body: {
@@ -207,6 +209,3 @@ function searchSyslogLogs(query, callback) {
     return callback(null, resp);
   });
 }
-
-module.exports.RAW_SYSLOG_TEMPLATE = RAW_SYSLOG_TEMPLATE;
-module.exports.searchSyslogLogs = searchSyslogLogs;

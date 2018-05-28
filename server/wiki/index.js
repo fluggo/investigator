@@ -6,14 +6,14 @@ const d3 = require('d3');
 const async = require('async');
 const EventEmitter = require('events');
 module.exports = new EventEmitter();
-const es = require('../es.js');
+const es = require('../es');
 
-const util = require('./util.js');
-const indexMaint = require('./index-maint.js');
+const util = require('./util');
+const indexMaint = require('./index-maint');
 const logger = util.logger;
 const uuid = require('uuid/v4');
 const extend = require('extend');
-const userFuncs = require('./user-funcs.js');
+const userFuncs = require('./user-funcs');
 
 function getArticleById(id, options, callback) {
   if(!callback) {

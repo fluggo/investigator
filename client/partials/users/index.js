@@ -4,10 +4,6 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-require('./list.html');
-require('./user.html');
-require('./new.html');
-
 module.controller('views.users.list', function UsersListController($scope, $routeParams, userList, app, alerts) {
   $scope.users = userList;
   $scope.editWikiOptions = [

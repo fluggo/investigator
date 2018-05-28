@@ -8,21 +8,11 @@ var module = angular.module('investigator.Routes', ['investigator.AppConfig', 'n
 module.config(['$routeProvider', '$injector', function($routeProvider, $injector) {
   var GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  require('./partials/cluster');
-  require('./partials/ldap');
-  require('./partials/logs');
-  require('./partials/netflow');
-  require('./partials/wiki');
-  require('./partials/users');
-  require('./partials/cylance');
-  require('./partials/home.html');
-  require('./partials/raw-search.html');
-
   $routeProvider
-    .when('/wiki/new-article', {templateUrl: 'partials/wiki/new.html',
+    .when('/wiki/new-article', {template: require('./partials/wiki/new.html'),
       controller: 'views.wiki.new-article',
     })
-    .when('/wiki/article/:article', {templateUrl: 'partials/wiki/article.html',
+    .when('/wiki/article/:article', {template: require('./partials/wiki/article.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.article',
       resolve: {
@@ -52,7 +42,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         },
       }
     })
-    .when('/wiki/history/:uuid', {templateUrl: 'partials/wiki/history.html',
+    .when('/wiki/history/:uuid', {template: require('./partials/wiki/history.html'),
       controller: 'views.wiki.article-history',
       resolve: {
         originalArticle: function($route, app, $location, $q, $log, $rootScope) {
@@ -61,7 +51,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         },
       }
     })
-    .when('/wiki/tags', {templateUrl: 'partials/wiki/tags-list.html',
+    .when('/wiki/tags', {template: require('./partials/wiki/tags-list.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.tag-list',
       resolve: {
@@ -70,23 +60,23 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/wiki/search', {templateUrl: 'partials/wiki/search.html',
+    .when('/wiki/search', {template: require('./partials/wiki/search.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.search',
     })
-    .when('/wiki/tag-report', {templateUrl: 'partials/wiki/tag-report.html',
+    .when('/wiki/tag-report', {template: require('./partials/wiki/tag-report.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.tag-report'
     })
-    .when('/wiki/wiki-update', {templateUrl: 'partials/wiki/wiki-merge.html',
+    .when('/wiki/wiki-update', {template: require('./partials/wiki/wiki-merge.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.wiki-merge',
     })
-    .when('/wiki/wiki-review', {templateUrl: 'partials/wiki/wiki-review.html',
+    .when('/wiki/wiki-review', {template: require('./partials/wiki/wiki-review.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.wiki-review',
     })
-    .when('/wiki/duplicate-tags', {templateUrl: 'partials/wiki/duplicate-tag-report.html',
+    .when('/wiki/duplicate-tags', {template: require('./partials/wiki/duplicate-tag-report.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.duplicate-tag-report',
       resolve: {
@@ -95,13 +85,13 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/wiki/format-help', {templateUrl: 'partials/wiki/format-help.html',
+    .when('/wiki/format-help', {template: require('./partials/wiki/format-help.html'),
       reloadOnSearch: false,
       controller: 'views.wiki.format-help',
     })
 
     /***** LDAP ****/
-    .when('/ldap/object/:id', {templateUrl: 'partials/ldap/object.html',
+    .when('/ldap/object/:id', {template: require('./partials/ldap/object.html'),
       controller: 'views.ldap.object',
       resolve: {
         alternatives: function($route, app, $location, $q, $log) {
@@ -128,12 +118,12 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         },
       }
     })
-    .when('/ldap/search', {templateUrl: 'partials/ldap/search.html',
+    .when('/ldap/search', {template: require('./partials/ldap/search.html'),
       reloadOnSearch: false,
       controller: 'views.ldap.search',
     })
     .when('/ldap/reports/unused-accounts', {
-      templateUrl: 'partials/ldap/reports/unused-accounts.html',
+      template: require('./partials/ldap/reports/unused-accounts.html'),
       controller: 'views.ldap.reports.unused-accounts',
       resolve: {
         reportData: function($route, app) {
@@ -143,7 +133,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
       }
     })
     .when('/ldap/reports/admins', {
-      templateUrl: 'partials/ldap/reports/admins.html',
+      template: require('./partials/ldap/reports/admins.html'),
       controller: 'views.ldap.reports.admins',
       resolve: {
         reportData: function(app) {
@@ -152,7 +142,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
       }
     })
     .when('/ldap/reports/dc-roles', {
-      templateUrl: 'partials/ldap/reports/dc-roles.html',
+      template: require('./partials/ldap/reports/dc-roles.html'),
       controller: 'views.ldap.reports.dc-roles',
       resolve: {
         reportData: function(app) {
@@ -163,12 +153,12 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
 
     /***** Cylance *****/
     .when('/cylance/device/search', {
-      templateUrl: 'partials/cylance/device/search.html',
+      template: require('./partials/cylance/device/search.html'),
       reloadOnSearch: false,
       controller: 'views.cylance.device.search',
     })
     .when('/cylance/device/object/:id', {
-      templateUrl: 'partials/cylance/device/object.html',
+      template: require('./partials/cylance/device/object.html'),
       controller: 'views.cylance.device.object',
       resolve: {
         deviceObj: function($route, app, $q) {
@@ -187,15 +177,15 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** Netflow ****/
-    .when('/netflow/search', {templateUrl: 'partials/netflow/search.html',
+    .when('/netflow/search', {template: require('./partials/netflow/search.html'),
       reloadOnSearch: false,
       controller: 'views.netflow.search',
     })
-    .when('/netflow/raw-search', {templateUrl: 'partials/netflow/search-raw.html',
+    .when('/netflow/raw-search', {template: require('./partials/netflow/search-raw.html'),
       reloadOnSearch: false,
       controller: 'views.netflow.raw-search',
     })
-    .when('/netflow/health', {templateUrl: 'partials/netflow/health.html',
+    .when('/netflow/health', {template: require('./partials/netflow/health.html'),
       controller: 'views.netflow.health',
       resolve: {
         healthObj: function($route, app) {
@@ -205,13 +195,13 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** Raw ****/
-    .when('/raw-search', {templateUrl: 'partials/raw-search.html',
+    .when('/raw-search', {template: require('./partials/raw-search.html'),
       reloadOnSearch: false,
       controller: 'views.raw.search',
     })
 
     /***** Bunyan ****/
-    .when('/logs/bunyan/entry/:date/:id', {templateUrl: 'partials/logs/bunyan/entry.html',
+    .when('/logs/bunyan/entry/:date/:id', {template: require('./partials/logs/bunyan/entry.html'),
       controller: 'views.logs.bunyan.entry',
       resolve: {
         bunyanEntry: function($route, $q, app) {
@@ -227,7 +217,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** Users ****/
-    .when('/users/', {templateUrl: 'partials/users/list.html',
+    .when('/users/', {template: require('./partials/users/list.html'),
       controller: 'views.users.list',
       resolve: {
         userList: function(app) {
@@ -235,10 +225,10 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/users/new-user', {templateUrl: 'partials/users/new.html',
+    .when('/users/new-user', {template: require('./partials/users/new.html'),
       controller: 'views.users.new-user',
     })
-    .when('/users/:upn', {templateUrl: 'partials/users/user.html',
+    .when('/users/:upn', {template: require('./partials/users/user.html'),
       controller: 'views.users.user',
       resolve: {
         user: function($route, app) {
@@ -249,7 +239,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** WSA ****/
-    .when('/logs/wsa/entry/:date/:id', {templateUrl: 'partials/logs/wsa/entry.html',
+    .when('/logs/wsa/entry/:date/:id', {template: require('./partials/logs/wsa/entry.html'),
       controller: 'views.logs.wsa.entry',
       resolve: {
         wsaEntry: function($route, $q, app) {
@@ -263,13 +253,13 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/logs/wsa/search', {templateUrl: 'partials/logs/wsa/search.html',
+    .when('/logs/wsa/search', {template: require('./partials/logs/wsa/search.html'),
       reloadOnSearch: false,
       controller: 'views.logs.wsa.search',
     })
 
     /***** MSVISTA ****/
-    .when('/logs/msvista/entry/:date/:id', {templateUrl: 'partials/logs/msvista/entry.html',
+    .when('/logs/msvista/entry/:date/:id', {template: require('./partials/logs/msvista/entry.html'),
       controller: 'views.logs.msvista.entry',
       resolve: {
         msvistaEntry: function($route, $q, app) {
@@ -283,11 +273,11 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/logs/msvista/search', {templateUrl: 'partials/logs/msvista/search.html',
+    .when('/logs/msvista/search', {template: require('./partials/logs/msvista/search.html'),
       reloadOnSearch: false,
       controller: 'views.logs.msvista.search',
     })
-    .when('/logs/msvista/stats', {templateUrl: 'partials/logs/msvista/stats.html',
+    .when('/logs/msvista/stats', {template: require('./partials/logs/msvista/stats.html'),
       controller: 'views.logs.msvista.stats',
       resolve: {
         statsObj: function($route, app) {
@@ -297,7 +287,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** CYLANCE *****/
-    .when('/logs/cylance/entry/:date/:id', {templateUrl: 'partials/logs/cylance/entry.html',
+    .when('/logs/cylance/entry/:date/:id', {template: require('./partials/logs/cylance/entry.html'),
       controller: 'views.logs.cylance.entry',
       resolve: {
         cylanceEntry: function($route, $q, app) {
@@ -311,13 +301,13 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/logs/cylance/search', {templateUrl: 'partials/logs/cylance/search.html',
+    .when('/logs/cylance/search', {template: require('./partials/logs/cylance/search.html'),
       reloadOnSearch: false,
       controller: 'views.logs.cylance.search',
     })
 
     /***** SQL *****/
-    .when('/logs/sql/entry/:date/:id', {templateUrl: 'partials/logs/sql/entry.html',
+    .when('/logs/sql/entry/:date/:id', {template: require('./partials/logs/sql/entry.html'),
       controller: 'views.logs.sql.entry',
       resolve: {
         sqlEntry: function($route, $q, app) {
@@ -331,19 +321,19 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/logs/sql/search', {templateUrl: 'partials/logs/sql/search.html',
+    .when('/logs/sql/search', {template: require('./partials/logs/sql/search.html'),
       reloadOnSearch: false,
       controller: 'views.logs.sql.search',
     })
 
     /***** Syslog *****/
-    .when('/logs/syslog/search', {templateUrl: 'partials/logs/syslog/search.html',
+    .when('/logs/syslog/search', {template: require('./partials/logs/syslog/search.html'),
       reloadOnSearch: false,
       controller: 'views.logs.syslog.search',
     })
 
     /***** Running programs *****/
-    .when('/logs/running-programs', {templateUrl: 'partials/logs/running-programs.html',
+    .when('/logs/running-programs', {template: require('./partials/logs/running-programs.html'),
       controller: 'views.logs.running-programs',
       resolve: {
         currentStatuses: function(app) {
@@ -353,7 +343,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
     })
 
     /***** CLUSTER ****/
-    .when('/cluster/health', {templateUrl: 'partials/cluster/health.html',
+    .when('/cluster/health', {template: require('./partials/cluster/health.html'),
       controller: 'views.cluster.health',
       resolve: {
         healthObj: function($route, app) {
@@ -361,7 +351,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/cluster/state', {templateUrl: 'partials/cluster/state.html',
+    .when('/cluster/state', {template: require('./partials/cluster/state.html'),
       controller: 'views.cluster.state',
       resolve: {
         stateObj: function($route, app) {
@@ -369,7 +359,7 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/cluster/stats', {templateUrl: 'partials/cluster/stats.html',
+    .when('/cluster/stats', {template: require('./partials/cluster/stats.html'),
       controller: 'views.cluster.stats',
       resolve: {
         statsObj: function($route, app) {
@@ -377,13 +367,13 @@ module.config(['$routeProvider', '$injector', function($routeProvider, $injector
         }
       }
     })
-    .when('/cluster/', {templateUrl: 'partials/cluster/home.html',
+    .when('/cluster/', {template: require('./partials/cluster/home.html'),
       controller: 'views.cluster.home',
       /*resolve: {
       }*/
     })
 
-    .when('/', {templateUrl: 'partials/home.html',
+    .when('/', {template: require('./partials/home.html'),
     })
 
     .otherwise({template: '<div class="container">Page not found.</div>'});

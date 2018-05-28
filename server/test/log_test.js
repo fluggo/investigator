@@ -5,7 +5,7 @@
 const chai = require('chai'), expect = chai.expect;
 
 describe('Log utils:', function() {
-  const util = require('../../common/util.js');
+  const util = require('../../common/util');
 
   describe('parsePlainHighlights function:', function() {
     it('passes through a simple value', function() {

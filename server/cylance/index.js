@@ -1,8 +1,8 @@
 'use strict';
 
 const async = require('async');
-const es = require('../es.js');
-const mapping = require('./mapping.js');
+const es = require('../es');
+const mapping = require('./mapping');
 
 const CYLANCE_READ_ALIAS = 'cylance';
 const CYLANCE_DEVICE = mapping.CYLANCE_DEVICE;

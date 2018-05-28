@@ -1,14 +1,14 @@
 'use strict';
 
 const express = require('express');
-const _config = require('./config.js');
+const _config = require('./config');
 const logger = _config.logger.child({module: 'forms'});
 const path = require('path');
 const bodyParser = require('body-parser');
 const wiki = require('./wiki');
 const d3 = require('d3');
 const timestampFormat = d3.timeFormat('%Y-%m-%d %H:%M');
-const util = require('../common/util.js');
+const util = require('../common/util');
 
 function nonStaticCacheControl(res, path, stat) {
   // Tell the browser it must check with us for a new version every time

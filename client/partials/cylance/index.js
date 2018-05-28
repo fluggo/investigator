@@ -4,11 +4,6 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-// Require all the template pages; browserify will turn these into angular templates
-//require('./machine/summary.html');
-require('./device/object.html');
-require('./device/search.html');
-
 function uncollapseArray(val) {
   if(!val || angular.isArray(val))
     return val;

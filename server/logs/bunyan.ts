@@ -1,13 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+import { BunyanLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const BUNYAN_INDEX_ALIAS = 'bunyan';
 const BUNYAN_TYPE = 'bunyan';
 
-const BUNYAN_TEMPLATE = {
+export const BUNYAN_TEMPLATE: any = {
   template: 'bunyan-*',
   settings: {
     'index.codec': 'best_compression',
@@ -64,11 +67,11 @@ const BUNYAN_TEMPLATE = {
   }
 };
 
-function findBunyanByLocator(locator, callback) {
+export function findBunyanByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
-    return callback(new LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
+    return callback(new logCommon.LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
   }
 
   var date = logCommon.base64ToNumber(splitLocator[0]);
@@ -97,10 +100,6 @@ function findBunyanByLocator(locator, callback) {
   });
 }
 
-function getBunyanEntry(index, id, callback) {
-  return es.client.get({ index: index, type: BUNYAN_TYPE, id: id }, callback);
+export function getBunyanEntry(index: string, id: string, callback: (err: any, response: es.GetResponse<BunyanLogEntry>) => void) {
+  return es.client.get<BunyanLogEntry>({ index: index, type: BUNYAN_TYPE, id: id }, callback);
 }
-
-module.exports.BUNYAN_TEMPLATE = BUNYAN_TEMPLATE;
-module.exports.findBunyanByLocator = findBunyanByLocator;
-module.exports.getBunyanEntry = getBunyanEntry;

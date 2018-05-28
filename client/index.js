@@ -22,15 +22,28 @@ const angularModule = angular.module('investigator', [
   'ngRoute',
   'investigator.Search',
   'investigator.Routes',
-  'investigator.Templates',
   'angular-websocket',
 ]);
 
+// All submodules
 var d3 = require('d3');
-require('./routes.js');
-require('./search.js');
-require('./base.js');
+require('./routes');
+require('./search');
+require('./base');
 require('./template');
+require('./partials/ldap');
+require('./partials/logs');
+require('./partials/netflow');
+require('./partials/wiki');
+require('./partials/users');
+require('./partials/cylance');
+
+// All CSS (for now)
+require('./www/js/app.css');
+require('bootswatch/paper/bootstrap.min.css');
+require('codemirror/lib/codemirror.css');
+require('codemirror/addon/hint/show-hint.css');
+require('angular/angular-csp.css');
 
 const extend = require('extend');
 
@@ -442,7 +455,7 @@ angularModule.service('appSocket', function AppSocket($websocket, $rootScope, $t
 });
 
 angularModule.service('app', function(appSocket, d3service, alerts, $rootScope, $log) {
-  var utilService = require('../common/util.js');
+  var utilService = require('../common/util');
 
   function compareStringsCI(a, b) {
     a = a.toLowerCase();
@@ -967,7 +980,7 @@ angularModule.directive('searchHighlighter', function($document, $window) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
-      var textile = require('../common/textile.js');
+      var textile = require('../common/textile');
 
       scope.$watch(attrs.searchHighlighter, function(value) {
         // Empty the element

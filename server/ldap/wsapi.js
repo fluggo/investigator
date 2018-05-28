@@ -1,7 +1,7 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const ldap = require('./index.js');
+const wsapi = require('../wsapi');
+const ldap = require('./index');
 
 wsapi.on('ldap/get-objects-by-id', function(request, callback, notifyCallback) {
   ldap.getObjectsById(request.data.ids, request.data.options, callback);

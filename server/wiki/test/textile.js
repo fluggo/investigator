@@ -5,7 +5,7 @@
 const chai = require('chai'), expect = chai.expect;
 
 describe('Textile', function() {
-  const textile = require('../../../common/textile.js');
+  const textile = require('../../../common/textile');
 
   it('parses links', function() {
     var jsonml = textile.jsonml("There is a link to http://www.google.com here.");

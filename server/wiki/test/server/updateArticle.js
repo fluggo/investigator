@@ -4,11 +4,11 @@
 
 const chai = require('chai'), expect = chai.expect;
 
-const wikiUtil = require('../../util.js');
-const test = require('./index.js');
-const indexMaint = require('../../index-maint.js');
+const wikiUtil = require('../../util');
+const test = require('./index');
+const indexMaint = require('../../index-maint');
 const async = require('async');
-const wiki = require('../../index.js');
+const wiki = require('../../index');
 const d3 = require('d3');
 
 describe('updateArticle', function() {

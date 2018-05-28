@@ -4,11 +4,6 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-// Require all the template pages; browserify will turn these into angular templates
-require('./health.html');
-require('./search.html');
-require('./search-raw.html');
-
 module.directive('netflowGraph', function factory($log, $location, $sniffer, $parse, app) {
   var lastId = 0;
 

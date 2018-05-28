@@ -1,13 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
+import { AppStatusLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const APPSTATUS_INDEX_ALIAS = 'appstatus';
 const APPSTATUS_TYPE = 'appstatus';
 
-const APPSTATUS_TEMPLATE = {
+export const APPSTATUS_TEMPLATE: any = {
   template: 'appstatus-*',
   settings: {
     'index.codec': 'best_compression',
@@ -26,6 +29,7 @@ const APPSTATUS_TEMPLATE = {
         log: logCommon.LOG_COMMON,
         status: {
           properties: {
+            processId: { type: 'integer' },
             processVersion: { type: 'keyword' },
             processStatus: { type: 'keyword' },
             program: { type: 'keyword' },
@@ -47,8 +51,8 @@ const APPSTATUS_TEMPLATE = {
   }
 };
 
-function getRunningPrograms(callback) {
-  return es.client.search({
+export function getRunningPrograms(callback: (err: any, results?: AppStatusLogEntry[]) => void) {
+  return es.client.search<AppStatusLogEntry>({
     index: APPSTATUS_INDEX_ALIAS,
     type: APPSTATUS_TYPE,
     body: {
@@ -69,11 +73,15 @@ function getRunningPrograms(callback) {
     if(err)
       return callback(err);
 
-    const resultMap = new Map();
+    const resultMap = new Map<string, AppStatusLogEntry>();
 
     for(let hit of result.hits.hits) {
-      const time = new Date(hit._source.log.eventTime);
-      const key = `${hit._source.log.source.hostname}\0${hit._source.status.processId}\0${hit._source.status.program}`;
+      const time = util.asDate(hit._source.log.eventTime);
+
+      if(!time)
+        continue;
+
+      const key = `${hit._source.log.source && hit._source.log.source.hostname}\0${hit._source.status.processId}\0${hit._source.status.program}`;
 
       let oldEntry = resultMap.get(key);
 
@@ -81,7 +89,7 @@ function getRunningPrograms(callback) {
         resultMap.set(key, hit._source);
       }
       else {
-        const oldTime = new Date(oldEntry.log.eventTime);
+        const oldTime = util.asDate(oldEntry.log.eventTime)!;
 
         if(time > oldTime)
           resultMap.set(key, hit._source);
@@ -91,6 +99,3 @@ function getRunningPrograms(callback) {
     return callback(err, Array.from(resultMap.values()));
   });
 }
-
-module.exports.APPSTATUS_TEMPLATE = APPSTATUS_TEMPLATE;
-module.exports.getRunningPrograms = getRunningPrograms;

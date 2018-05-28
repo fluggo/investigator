@@ -4,21 +4,7 @@ var angular = require('angular');
 var module = angular.module('investigator');
 var d3 = require('d3');
 
-// Require all the template pages; browserify will turn these into angular templates
-require('./bunyan/entry.html');
-require('./wsa/entry.html');
-require('./wsa/search.html');
-require('./cylance/entry.html');
-require('./cylance/search.html');
-require('./msvista/entry.html');
-require('./msvista/search.html');
-require('./msvista/stats.html');
-require('./sql/search.html');
-require('./sql/entry.html');
-require('./syslog/search.html');
-require('./running-programs.html');
-
-const logColumns = require('../../../common/logcolumns.js');
+const logColumns = require('../../../common/logcolumns');
 
 module.directive('logTable', function factory($log, $location, $sniffer, $parse, app, d3service) {
   return {
@@ -482,7 +468,7 @@ module.controller('views.logs.msvista.search', function LogVistaSearchController
 });
 
 module.component('msvistaEntry', {
-  templateUrl: require('./msvista/entry-template.html'),
+  template: require('./msvista/entry-template.html'),
   controller: function() {
     this.$onChanges = function onChanges() {
       this.eventTime = this.entry && new Date(this.entry.log.eventTime);

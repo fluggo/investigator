@@ -2,13 +2,8 @@ var angular = require('angular');
 var module = angular.module('base');
 var d3 = require('d3');
 
-// Require all the template pages; browserify will turn these into angular templates
-require('./error-message.html');
-require('./pager.html');
-require('./quick-search-results.html');
-
 module.component('pager', {
-  templateUrl: 'template/pager.html',
+  template: require('./pager.html'),
   controller: function() {
     function generatePageList(page, pageCount) {
       var result = [page], i = page, count = 0;
@@ -65,6 +60,6 @@ module.directive('errorMessage', function() {
   return {
     restrict: 'E',
     scope: {error: '='},
-    templateUrl: 'template/error-message.html'
+    template: require('./error-message.html')
   };
 });

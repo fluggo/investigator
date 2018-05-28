@@ -1,13 +1,14 @@
-'use strict';
+import * as wsapi from '../wsapi';
+import * as netflow from './index';
+import * as users from '../users';
+import * as util from '../../common/util';
 
-const wsapi = require('../wsapi.js');
-const netflow = require('./index.js');
-
-function canViewNetflow(user) {
-  return user.getSettings().userControls.netflow.view;
+function canViewNetflow(user: users.User) {
+  const netflow = user.getSettings().userControls.netflow;
+  return netflow && netflow.view;
 }
 
-wsapi.on('netflow/search', function(request, callback, notifyCallback) {
+wsapi.on<util.NetflowSearchQuery>('netflow/search', function(request, callback, notifyCallback) {
   if(!canViewNetflow(request.user)) {
     request.log.error(`User ${request.user.upn} tried to search netflow, which they are not allowed to do.`);
     return callback(new Error('Request denied.'));
@@ -24,7 +25,7 @@ wsapi.on('netflow/health', function(request, callback, notifyCallback) {
   netflow.healthCheck(callback);
 });
 
-wsapi.on('netflow/raw-search', function(request, callback, notifyCallback) {
+wsapi.on<util.NetflowSearchQuery>('netflow/raw-search', function(request, callback, notifyCallback) {
   if(!canViewNetflow(request.user)) {
     request.log.error(`User ${request.user.upn} tried to search netflow, which they are not allowed to do.`);
     return callback(new Error('Request denied.'));

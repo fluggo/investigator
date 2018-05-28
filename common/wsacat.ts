@@ -8,7 +8,21 @@ description:
 examples: 
 */
 
-var categories = [
+interface Category {
+  /** Code for the category. Log files will have this with the prefix "IW_". */
+  id: string;
+
+  /** Name of the category. */
+  name: string;
+
+  code: number;
+
+  description: string;
+
+  examples?: string[];
+}
+
+export const categories: Category[] = [
   {
     id: 'adlt',
     name: 'Adult',
@@ -560,5 +574,3 @@ var categories = [
     examples: ['mail.yahoo.com', 'www.hotmail.com'],
   },
 ];
-
-module.exports = categories;

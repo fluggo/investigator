@@ -1,17 +1,15 @@
-'use strict';
+import * as bunyan from './bunyan';
+import * as wsa from './wsa';
+import * as appstatus from './appstatus';
+import * as msvista from './msvista';
+import * as syslog from './syslog';
+import * as sql from './sql';
+import * as cylance from './cylance';
+import * as dns from './dns';
+import * as async from 'async';
+import * as es from '../es';
 
-const bunyan = require('./bunyan.js');
-const wsa = require('./wsa.js');
-const appstatus = require('./appstatus.js');
-const msvista = require('./msvista.js');
-const syslog = require('./syslog.js');
-const sql = require('./sql.js');
-const cylance = require('./cylance.js');
-const dns = require('./dns.js');
-const async = require('async');
-const es = require('../es.js');
-
-function setTemplates(callback) {
+export function setTemplates(callback: (err: any) => void) {
   async.parallel([
     callback => es.client.indices.putTemplate({
       name: 'bunyan-template',
@@ -48,9 +46,8 @@ function setTemplates(callback) {
   ], callback);
 }
 
-module.exports.setTemplates = setTemplates;
-module.exports.findBunyanByLocator = bunyan.findBunyanByLocator;
-module.exports.findVistaLogByLocator = msvista.findVistaLogByLocator;
-module.exports.findWsaLogByLocator = wsa.findWsaLogByLocator;
-module.exports.findCylanceLogByLocator = cylance.findCylanceLogByLocator;
-module.exports.findSqlLogByLocator = sql.findSqlLogByLocator;
+export { findBunyanByLocator } from './bunyan';
+export { findVistaLogByLocator } from './msvista';
+export { findWsaLogByLocator } from './wsa';
+export { findCylanceLogByLocator } from './cylance';
+export { findSqlLogByLocator } from './sql';

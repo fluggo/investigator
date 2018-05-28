@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head data-client-version="<!-- @echo CLIENT_VERSION -->" data-ws-base-path="<!-- @echo WS_BASE_PATH -->">
+	<head data-client-version="<%= htmlWebpackPlugin.options.CLIENT_VERSION %>" data-ws-base-path="<%= htmlWebpackPlugin.options.WS_BASE_PATH %>">
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<title>Investigator</title>
-		<base href="<!-- @echo URL_BASE_PATH -->">
+		<base href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>">
 
-		<link rel="shortcut icon" href="<!-- @echo URL_BASE_PATH-->js/console-app.ico">
+		<link rel="shortcut icon" href="<%= htmlWebpackPlugin.options.URL_BASE_PATH %>js/console-app.ico">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css" integrity="sha256-3dkvEK0WLHRJ7/Csr0BZjAWxERc5WH7bdeUya2aXxdU=" crossorigin="anonymous" />
-		<link rel="stylesheet" href="js/app.css" />
 	</head>
 	<body ng-controller="AppController" ng-csp ng-app="investigator">
 		<div id="topnavbar" class="hidden-print">
@@ -94,7 +93,5 @@
 		<base-temp-alert></base-temp-alert>
 
 		<div ng-hide="true">Loading</div>
-
-		<script defer src="js/bundle.js"></script>
 	</body>
 </html>

@@ -1,9 +1,9 @@
 'use strict';
 
-const config = require('../server/config.js');
+const config = require('../server/config');
 const logger = config.logger;
 
-const es = require('../server/es.js');
+const es = require('../server/es');
 const https = require('https');
 const d3 = require('d3');
 const async = require('async');
@@ -12,7 +12,7 @@ const TIME_PARSE = d3.timeParse('%-m/%-d/%Y %-I:%M:%S %p');
 
 const authToken = config.cylance.authToken;
 
-const mapping = require('../server/cylance/mapping.js');
+const mapping = require('../server/cylance/mapping');
 const esIndexQueue = new es.StaticIndexer({alias: 'cylance', mapping: mapping.MAPPING});
 
 if(config.cylance.index === undefined)

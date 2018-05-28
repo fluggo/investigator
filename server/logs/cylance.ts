@@ -1,16 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es.js');
-const logCommon = require('./common.js');
-const config = require('../config.js');
-const d3 = require('d3');
-const util = require('../../common/util.js');
-const logColumns = require('../../common/logcolumns.js');
+import { CylanceLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const CYLANCE_INDEX_ALIAS = 'cylancelog';
 const CYLANCE_TYPE = 'cylancelog';
 
-const CYLANCE_TEMPLATE = {
+export const CYLANCE_TEMPLATE: any = {
   template: 'cylancelog-*',
   settings: {
     'index.codec': 'best_compression',
@@ -155,11 +155,11 @@ const CYLANCE_TEMPLATE = {
   }
 };
 
-function findCylanceLogByLocator(locator, callback) {
+export function findCylanceLogByLocator(locator: string, callback: (err: any, results?: util.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
-    return callback(new LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
+    return callback(new logCommon.LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
   }
 
   var date = logCommon.base64ToNumber(splitLocator[0]);
@@ -188,26 +188,21 @@ function findCylanceLogByLocator(locator, callback) {
   });
 }
 
-function getCylanceLogEntry(index, id, callback) {
-  return es.client.get({ index: index, type: CYLANCE_TYPE, id: id }, callback);
+export function getCylanceLogEntry(index: string, id: string, callback: (err: any, response: es.GetResponse<CylanceLogEntry>) => void) {
+  return es.client.get<CylanceLogEntry>({ index: index, type: CYLANCE_TYPE, id: id }, callback);
 }
 
 
-function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
-  options = options || {};
-
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createCylanceQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date, domainSet: string[]) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -217,8 +212,8 @@ function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
         {
           range: {
             'log.eventTime': {
-              gte: startTime,
-              lt: endTime,
+              gte: d3time.timeMinute.floor(startTime),
+              lt: d3time.timeMinute.ceil(endTime),
             }
           }
         },
@@ -243,17 +238,15 @@ function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
   let scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
 
   // Collection of all terms sitting by themselves so they can be queried together
-  let lonelyShouldTerms = [];
+  const lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms, options) {
-    options = options || {};
-
+  function makeTerms(terms: string | string[], options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
     if(!Array.isArray(terms))
       terms = [terms];
 
     domainSet.push(...terms);
 
-    const result = [
+    const result: any = [
       {
         multi_match: {
           query: terms.join(' '),
@@ -309,8 +302,10 @@ function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
       filtered[term.req].push(query);
     }
     else if(term.type === 'exists') {
-      const existsColumn = logColumns.cylanceColumnsByName.get(term.term);
-      filtered[term.req].push({ exists: { field: existsColumn.field } });
+      const existsColumn = logColumns.syslogColumnsByName.get(term.term);
+
+      if(existsColumn)
+        filtered[term.req].push({ exists: { field: existsColumn.field } });
     }
     else if(column) {
       const esterm = column.toEsTerm(term.term);
@@ -337,17 +332,24 @@ function createCylanceQuery(terms, options, startTime, endTime, domainSet) {
   return result;
 }
 
-function searchCylanceLogs(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util.js').parseQueryTerms;
-  let domainSet = [];
-  const esQuery = createCylanceQuery(parseQueryTerms(query.q), {}, startTime, endTime, domainSet);
+export function searchCylanceLogs(query: util.SearchQuery, callback: (err: any, response?: es.SearchResponse<CylanceLogEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const domainSetParam: string[] = [];
+  const esQuery = createCylanceQuery(util.parseQueryTerms(query.q), startTime, endTime, domainSetParam);
   const sortColumn = logColumns.cylanceColumnsByName.get(query.sortProp);
 
-  domainSet = new Set(domainSet);
+  const domainSet = new Set(domainSetParam);
 
-  return es.client.search({
+  return es.client.search<CylanceLogEntry>({
     index: CYLANCE_INDEX_ALIAS,
     type: CYLANCE_TYPE,
     body: {
@@ -370,9 +372,3 @@ function searchCylanceLogs(query, callback) {
     return callback(null, resp);
   });
 }
-
-
-module.exports.CYLANCE_TEMPLATE = CYLANCE_TEMPLATE;
-module.exports.findCylanceLogByLocator = findCylanceLogByLocator;
-module.exports.getCylanceLogEntry = getCylanceLogEntry;
-module.exports.searchCylanceLogs = searchCylanceLogs;

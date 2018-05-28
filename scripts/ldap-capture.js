@@ -1,12 +1,12 @@
 'use strict';
 
-const config = require('../server/config.js');
+const config = require('../server/config');
 const logger = config.logger;
 
-const es = require('../server/es.js');
+const es = require('../server/es');
 const ldapService = require('../server/ldap');
-const mapping = require('../server/ldap/mapping.js');
-const util = require('../common/util.js');
+const mapping = require('../server/ldap/mapping');
+const util = require('../common/util');
 
 const d3 = require('d3');
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const es = require('../es.js');
+const es = require('../es');
 
 const CYLANCE_DEVICE = 'cylance-device';
 

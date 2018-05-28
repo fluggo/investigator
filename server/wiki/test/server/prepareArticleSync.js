@@ -4,7 +4,7 @@
 
 const chai = require('chai'), expect = chai.expect;
 
-const wikiUtil = require('../../util.js');
+const wikiUtil = require('../../util');
 
 describe('prepareArticleSync', function() {
   const tagTypes = { 'alias': 'string' };

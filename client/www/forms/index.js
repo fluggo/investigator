@@ -8,12 +8,16 @@ var module = angular.module('PublicForms', [
   'base',
   'base.ui',
   'base.d3filters',
-  'Forms.Templates'
 ]);
 
 var d3 = require('d3');
-require('../../base.js');
+require('../../base');
 require('../../template');
+require('../js/app.css');
+require('bootswatch/paper/bootstrap.min.css');
+require('codemirror/lib/codemirror.css');
+require('codemirror/addon/hint/show-hint.css');
+require('angular/angular-csp.css');
 
 // Declare the root controller for our application
 // (the div[@id="app"] element has an ng-controller attribute that uses this)

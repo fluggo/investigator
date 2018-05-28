@@ -276,7 +276,7 @@ angularModule.component('quickSearchList', {
     highlightIndex: '<',
     searchResults: '<',
   },
-  templateUrl: 'template/quick-search-results.html',
+  template: require('./template/quick-search-results.html'),
   controller: function($element, SearchService, $log) {
     var lastSearchResults = [];
 

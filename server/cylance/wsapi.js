@@ -1,7 +1,7 @@
 'use strict';
 
-const wsapi = require('../wsapi.js');
-const cylance = require('./index.js');
+const wsapi = require('../wsapi');
+const cylance = require('./index');
 
 wsapi.on('cylance/device/get-objects-by-id', function(request, callback, notifyCallback) {
   cylance.getDevicesById(request.data.ids, request.data.options, callback);
