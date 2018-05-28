@@ -1,16 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es');
-const logCommon = require('./common');
-const config = require('../config');
-const d3 = require('d3');
-const util = require('../../common/util');
-const logColumns = require('../../common/logcolumns');
+import { SqlLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const SQL_INDEX_ALIAS = 'sqllog';
 const SQL_TYPE = 'sqllog';
 
-const SQLLOG_TEMPLATE = {
+export const SQLLOG_TEMPLATE = {
   template: 'sqllog-*',
   settings: {
     'index.codec': 'best_compression',
@@ -46,7 +46,6 @@ const SQLLOG_TEMPLATE = {
             ApplicationName: { type: 'keyword' },
             LoginName: { type: 'keyword' },
             ServerName: { type: 'keyword' },
-            DatabaseName: { type: 'keyword' },
             SessionLoginName: { type: 'keyword' },
             SchemaName: { type: 'keyword' },
             ObjectName: { type: 'keyword' },
@@ -54,7 +53,6 @@ const SQLLOG_TEMPLATE = {
             OwnerName: { type: 'keyword' },
             AlterTableActionList: { type: 'keyword' },
             TargetObjectType: { type: 'keyword' },
-            OwnerName: { type: 'keyword' },
             Parameters: { type: 'keyword' },
             DefaultSchema: { type: 'keyword' },
             PropertyName: { type: 'keyword' },
@@ -62,7 +60,6 @@ const SQLLOG_TEMPLATE = {
             TargetObjectName: { type: 'keyword' },
             TargetUserName: { type: 'keyword' },
             TargetLoginName: { type: 'keyword' },
-            SessionLoginName: { type: 'keyword' },
             SID: { type: 'keyword' },
             LoginSid: { type: 'keyword' },
             TargetLoginSid: { type: 'keyword' },
@@ -100,16 +97,16 @@ const SQLLOG_TEMPLATE = {
   }
 };
 
-function findSqlLogByLocator(locator, callback) {
+export function findSqlLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
-    return callback(new LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
+    return callback(new logCommon.LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
   }
 
   var date = logCommon.base64ToNumber(splitLocator[0]);
 
-  es.client.search({
+  es.client.search<SqlLogEntry>({
     index: SQL_INDEX_ALIAS,
     type: SQL_TYPE,
     requestCache: false,
@@ -133,26 +130,21 @@ function findSqlLogByLocator(locator, callback) {
   });
 }
 
-function getSqlLogEntry(index, id, callback) {
-  return es.client.get({ index: index, type: SQL_TYPE, id: id }, callback);
+export function getSqlLogEntry(index: string, id: string, callback: (err: any, result: es.GetResponse<SqlLogEntry>) => void) {
+  return es.client.get<SqlLogEntry>({ index: index, type: SQL_TYPE, id: id }, callback);
 }
 
 
-function createSqlQuery(terms, options, startTime, endTime, domainSet) {
-  options = options || {};
-
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createSqlQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date, domainSet: string[]) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -162,8 +154,8 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeMinute.floor(startTime),
-              lt: d3.timeMinute.ceil(endTime),
+              gte: d3time.timeMinute.floor(startTime),
+              lt: d3time.timeMinute.ceil(endTime),
             }
           }
         },
@@ -189,20 +181,18 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
   let scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
 
   // Collection of all terms sitting by themselves so they can be queried together
-  let lonelyShouldTerms = [];
+  const lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms, options) {
-    options = options || {};
-
+  function makeTerms(terms: string | string[], options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
     if(!Array.isArray(terms))
       terms = [terms];
 
     domainSet.push(...terms);
 
-    const result = [
+    const result: any = [
       {
         multi_match: {
-          query: terms.join(' '),
+          query: terms,
           type: options.type || 'most_fields',
           fields: BODY_SEARCH_LIST,
           boost: 2,
@@ -210,10 +200,10 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
       },
     ];
 
-    if(options.type !== 'phrase' && !options.noFuzzies) {
+    if(options.type !== 'phrase') {
       result.push({
         multi_match: {
-          query: terms.join(' '),
+          query: terms,
           type: options.type || 'most_fields',
           fuzziness: 'AUTO',
           fields: BODY_SEARCH_LIST,
@@ -222,7 +212,7 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
       });
     }
 
-    return { bool: { should: result } };
+    return result;
   }
 
   terms.forEach(function(term) {
@@ -255,8 +245,10 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
       filtered[term.req].push(query);
     }
     else if(term.type === 'exists') {
-      const existsColumn = logColumns.sqlColumnsByName.get(term.term);
-      filtered[term.req].push({ exists: { field: existsColumn.field } });
+      const existsColumn = logColumns.syslogColumnsByName.get(term.term);
+
+      if(existsColumn)
+        filtered[term.req].push({ exists: { field: existsColumn.field } });
     }
     else if(column) {
       const esterm = column.toEsTerm(term.term);
@@ -283,17 +275,24 @@ function createSqlQuery(terms, options, startTime, endTime, domainSet) {
   return result;
 }
 
-function searchSqlLogs(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
-  let domainSet = [];
-  const esQuery = createSqlQuery(parseQueryTerms(query.q), {}, startTime, endTime, domainSet);
+export function searchSqlLogs(query: logCommon.SearchQuery, callback: (err: any, response?: es.SearchResponse<SqlLogEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const domainSetParam: string[] = [];
+  const esQuery = createSqlQuery(util.parseQueryTerms(query.q), startTime, endTime, domainSetParam);
   const sortColumn = logColumns.sqlColumnsByName.get(query.sortProp);
 
-  domainSet = new Set(domainSet);
+  const domainSet = new Set(domainSetParam);
 
-  return es.client.search({
+  return es.client.search<SqlLogEntry>({
     index: SQL_INDEX_ALIAS,
     type: SQL_TYPE,
     body: {
@@ -314,7 +313,7 @@ function searchSqlLogs(query, callback) {
       return callback(err);
 
     resp.hits.hits.forEach(hit => {
-      const tsql = hit.highlight && hit.highlight['sql.TSQLCommand'][0] || hit._source.sql.TSQLCommand;
+      const tsql: string = hit.highlight && hit.highlight['sql.TSQLCommand'][0] || hit._source.sql.TSQLCommand;
 
       if(!tsql)
         return;
@@ -337,9 +336,3 @@ function searchSqlLogs(query, callback) {
     return callback(null, resp);
   });
 }
-
-
-module.exports.SQLLOG_TEMPLATE = SQLLOG_TEMPLATE;
-module.exports.findSqlLogByLocator = findSqlLogByLocator;
-module.exports.getSqlLogEntry = getSqlLogEntry;
-module.exports.searchSqlLogs = searchSqlLogs;

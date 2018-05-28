@@ -1,16 +1,16 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es');
-const logCommon = require('./common');
-const config = require('../config');
-const d3 = require('d3');
-const util = require('../../common/util');
-const logColumns = require('../../common/logcolumns');
+import { WsaLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
 
 const WSA_INDEX_ALIAS = 'wsalog';
 const WSA_TYPE = 'wsalog';
 
-const WSALOG_TEMPLATE = {
+export const WSALOG_TEMPLATE = {
   template: 'wsalog-*',
   settings: {
     'index.codec': 'best_compression',
@@ -139,16 +139,16 @@ const WSALOG_TEMPLATE = {
   }
 };
 
-function findWsaLogByLocator(locator, callback) {
+export function findWsaLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
   var splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
-    return callback(new LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
+    return callback(new logCommon.LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
   }
 
   var date = logCommon.base64ToNumber(splitLocator[0]);
 
-  es.client.search({
+  es.client.search<WsaLogEntry>({
     index: WSA_INDEX_ALIAS,
     type: WSA_TYPE,
     requestCache: false,
@@ -172,26 +172,21 @@ function findWsaLogByLocator(locator, callback) {
   });
 }
 
-function getWsaLogEntry(index, id, callback) {
+export function getWsaLogEntry(index: string, id: string, callback: (err: any, result: es.GetResponse<WsaLogEntry>) => void) {
   return es.client.get({ index: index, type: WSA_TYPE, id: id }, callback);
 }
 
 
-function createWsaQuery(terms, options, startTime, endTime, domainSet) {
-  options = options || {};
-
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createWsaQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date, domainSet: string[]) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -201,8 +196,8 @@ function createWsaQuery(terms, options, startTime, endTime, domainSet) {
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeMinute.floor(startTime),
-              lt: d3.timeMinute.ceil(endTime),
+              gte: d3time.timeMinute.floor(startTime),
+              lt: d3time.timeMinute.ceil(endTime),
             }
           }
         },
@@ -227,9 +222,9 @@ function createWsaQuery(terms, options, startTime, endTime, domainSet) {
   let scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
 
   // Collection of all terms sitting by themselves so they can be queried together
-  let lonelyShouldTerms = [];
+  const lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms, options) {
+  function makeTerms(terms: string | string[], options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
     options = options || {};
 
     if(!Array.isArray(terms))
@@ -237,7 +232,7 @@ function createWsaQuery(terms, options, startTime, endTime, domainSet) {
 
     domainSet.push(...terms);
 
-    const result = [
+    const result: any[] = [
       {
         multi_match: {
           query: terms.join(' '),
@@ -314,8 +309,10 @@ function createWsaQuery(terms, options, startTime, endTime, domainSet) {
       filtered[term.req].push(query);
     }
     else if(term.type === 'exists') {
-      const existsColumn = logColumns.wsaColumnsByName.get(term.term);
-      filtered[term.req].push({ exists: { field: existsColumn.field } });
+      const existsColumn = logColumns.syslogColumnsByName.get(term.term);
+
+      if(existsColumn)
+        filtered[term.req].push({ exists: { field: existsColumn.field } });
     }
     else if(column) {
       const esterm = column.toEsTerm(term.term);
@@ -342,17 +339,24 @@ function createWsaQuery(terms, options, startTime, endTime, domainSet) {
   return result;
 }
 
-function searchWsaLogs(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
-  let domainSet = [];
-  const esQuery = createWsaQuery(parseQueryTerms(query.q), {}, startTime, endTime, domainSet);
+export function searchWsaLogs(query: logCommon.SearchQuery, callback: (err: any, results?: es.SearchResponse<WsaLogEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const domainSetParam: string[] = [];
+  const esQuery = createWsaQuery(util.parseQueryTerms(query.q), startTime, endTime, domainSetParam);
   const sortColumn = logColumns.wsaColumnsByName.get(query.sortProp);
 
-  domainSet = new Set(domainSet);
+  const domainSet = new Set(domainSetParam);
 
-  return es.client.search({
+  return es.client.search<WsaLogEntry>({
     index: WSA_INDEX_ALIAS,
     type: WSA_TYPE,
     body: {
@@ -373,7 +377,7 @@ function searchWsaLogs(query, callback) {
       return callback(err);
 
     resp.hits.hits.forEach(hit => {
-      const baseUrl = hit.highlight && hit.highlight['wsa.request.url'][0] || hit._source.wsa.request.url;
+      const baseUrl: string = hit.highlight && hit.highlight['wsa.request.url'][0] || hit._source.wsa.request.url;
 
       // Try to grab the domain
       hit.url = baseUrl.replace(/(^[a-z]+:\/\/)([^:/]+)(:[0-9]+)?(\/)/, (match, p1, p2, p3, p4) => {
@@ -393,9 +397,3 @@ function searchWsaLogs(query, callback) {
     return callback(null, resp);
   });
 }
-
-
-module.exports.WSALOG_TEMPLATE = WSALOG_TEMPLATE;
-module.exports.findWsaLogByLocator = findWsaLogByLocator;
-module.exports.getWsaLogEntry = getWsaLogEntry;
-module.exports.searchWsaLogs = searchWsaLogs;

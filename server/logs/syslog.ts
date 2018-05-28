@@ -35,7 +35,7 @@ export const RAW_SYSLOG_TEMPLATE = {
   }
 };
 
-function createSyslogQuery(terms: util.QueryTerm[], options: {}, startTime: Date, endTime: Date) {
+function createSyslogQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date) {
   const result: any = {
     bool: {
       filter: [
@@ -82,9 +82,7 @@ function createSyslogQuery(terms: util.QueryTerm[], options: {}, startTime: Date
   // Collection of all terms sitting by themselves so they can be queried together
   const lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms: string | string[], options?: { type?: 'phrase', noFuzzies?: boolean }) {
-    options = options || {};
-
+  function makeTerms(terms: string | string[], options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
     if(!Array.isArray(terms))
       terms = [terms];
 
@@ -178,14 +176,14 @@ export function searchSyslogLogs(query: logCommon.SearchQuery, callback: (err: a
   const startTime = util.createRelativeDate(query.start, false);
 
   if(!startTime)
-    return callback(new logCommon.LogError('Invalid start date for the query.', 'INVALID_START_DATE'));
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
 
   const endTime = util.createRelativeDate(query.end, true);
 
   if(!endTime)
-    return callback(new logCommon.LogError('Invalid end date for the query.', 'INVALID_END_DATE'));
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
 
-  const esQuery = createSyslogQuery(util.parseQueryTerms(query.q), {}, startTime, endTime);
+  const esQuery = createSyslogQuery(util.parseQueryTerms(query.q), startTime, endTime);
   const sortColumn = logColumns.syslogColumnsByName.get(query.sortProp);
 
   return es.client.search<BaseLogEntry>({

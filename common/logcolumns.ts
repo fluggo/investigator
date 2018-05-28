@@ -81,21 +81,6 @@ export function quoteTerm(term: string): string {
   return /[:\s]/.test(term) ? ('"' + term + '"') : term;
 }
 
-/**
- * Converts a string/Date scalar/array to a single date.
- * @param v Value to convert to a date.
- */
-function asDate(v: Date | Date[] | string | string[] | undefined): Date | undefined {
-  const scalar = util.asScalar<string | Date>(v);
-
-  if(scalar === undefined)
-    return undefined;
-  else if(typeof scalar === 'string')
-    return new Date(scalar);
-  else
-    return scalar;
-}
-
 type ColumnValue<V> = V | V[] | undefined;
 
 interface Formatter<T, V> {
@@ -375,12 +360,12 @@ class VistaTimeClassColumn extends DefaultColumn<templates.VistaLogEntry, Date> 
   }
 }
 
-class WsaTimeDecisionColumn extends DefaultColumn<templates.WsaLogEntry, Date> {
+class WsaTimeDecisionColumn extends DefaultColumn<templates.WsaLogEntry, Date | string> {
   constructor() {
     super('time', 'log.eventTime', 'Time', CAT_STAND, entry => entry._source.log.eventTime, { defaultSortOrder: 'desc' });
   }
 
-  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.WsaLogEntry>, callbacks: AlterTermCallbacks) {
+  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.WsaLogEntry>, callbacks: AlterTermCallbacks) {
     const labelClasses: { [x: string]: string } = {
       SUCCESS: 'label-success',
       WARNING: 'label-warning',
@@ -388,7 +373,7 @@ class WsaTimeDecisionColumn extends DefaultColumn<templates.WsaLogEntry, Date> {
       DEFAULT: 'label-default',
     };
 
-    const time = asDate(value);
+    const time = util.asDate(util.asScalar(value));
 
     td.style('white-space', 'pre');
     td.append('a')
@@ -414,7 +399,7 @@ class WsaTimeDecisionColumn extends DefaultColumn<templates.WsaLogEntry, Date> {
       .text(entry._source.wsa.aclDecision);
   }
 
-  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, time: Date, entry: LogDocument<templates.WsaLogEntry>, callbacks: AlterTermCallbacks) {
+  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, time: Date | string, entry: LogDocument<templates.WsaLogEntry>, callbacks: AlterTermCallbacks) {
     td.selectAll('*').remove();
     this.writeCell(td, time, entry, callbacks);
   }
@@ -872,15 +857,15 @@ wsaColumns.forEach((col, i) => {
   col.index = i;
 });
 
-const wsaColumnsByName = util.toMap(wsaColumns, d => d.name);
+export const wsaColumnsByName = util.toMap(wsaColumns, d => d.name);
 
-class CylanceTimeTypeColumn extends DefaultColumn<templates.CylanceLogEntry, Date> {
+class CylanceTimeTypeColumn extends DefaultColumn<templates.CylanceLogEntry, Date | string> {
   constructor() {
     super('time', 'log.eventTime', 'Time', CAT_STAND, a => a._source.log.eventTime ? new Date(a._source.log.eventTime) : undefined, { defaultSortOrder: 'desc' });
   }
 
-  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
-    const time = asDate(value);
+  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
+    const time = util.asDate(util.asScalar(value));
 
     const ago = d3filters.ago(time, {precise: true}), full = d3filters.ago(time, {precise: true, alwaysFull: true});
 
@@ -896,7 +881,7 @@ class CylanceTimeTypeColumn extends DefaultColumn<templates.CylanceLogEntry, Dat
       .text(ago);
   };
 
-  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
+  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
     td.selectAll('*').remove();
     this.writeCell(td, value, entry, callbacks);
   };
@@ -1074,13 +1059,13 @@ cylanceColumns.forEach((col, i) => {
 
 export const cylanceColumnsByName = util.toMap(cylanceColumns, d => d.name);
 
-class SqlTimeTypeColumn extends DefaultColumn<templates.SqlLogEntry, Date> {
+class SqlTimeTypeColumn extends DefaultColumn<templates.SqlLogEntry, Date | string> {
   constructor() {
     super('time', 'log.eventTime', 'Time', CAT_STAND, entry => entry._source.log.eventTime, { defaultSortOrder: 'desc' });
   }
 
-  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.SqlLogEntry>, callbacks: AlterTermCallbacks) {
-    const time = asDate(value);
+  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.SqlLogEntry>, callbacks: AlterTermCallbacks) {
+    const time = util.asDate(util.asScalar(value));
 
     td.style('white-space', 'pre');
     td.append('a')
@@ -1106,7 +1091,7 @@ class SqlTimeTypeColumn extends DefaultColumn<templates.SqlLogEntry, Date> {
       .text(entry._source.sql.EventType);
   }
 
-  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.SqlLogEntry>, callbacks: AlterTermCallbacks) {
+  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.SqlLogEntry>, callbacks: AlterTermCallbacks) {
     td.selectAll('*').remove();
     this.writeCell(td, value, entry, callbacks);
   }
@@ -1370,8 +1355,8 @@ const sqlColumns = [
     searchable: false,
   }),
 
-  new DefaultColumn<templates.SqlLogEntry, Date>('StartTime', 'sql.StartTime', 'StartTime', CAT_STATS, entry => entry._source.sql.StartTime, {baseUrl: 'logs/sql', searchable: false}),
-  new DefaultColumn<templates.SqlLogEntry, Date>('EndTime', 'sql.EndTime', 'EndTime', CAT_STATS, entry => entry._source.sql.EndTime, {baseUrl: 'logs/sql', searchable: false}),
+  new DefaultColumn<templates.SqlLogEntry, Date | string>('StartTime', 'sql.StartTime', 'StartTime', CAT_STATS, entry => entry._source.sql.StartTime, {baseUrl: 'logs/sql', searchable: false}),
+  new DefaultColumn<templates.SqlLogEntry, Date | string>('EndTime', 'sql.EndTime', 'EndTime', CAT_STATS, entry => entry._source.sql.EndTime, {baseUrl: 'logs/sql', searchable: false}),
 ];
 
 sqlColumns.forEach((col, i) => {
@@ -1380,17 +1365,19 @@ sqlColumns.forEach((col, i) => {
 
 export const sqlColumnsByName = util.toMap(sqlColumns, d => d.name);
 
-class SyslogTimeColumn extends DefaultColumn<templates.BaseLogEntry, Date> {
+class SyslogTimeColumn extends DefaultColumn<templates.BaseLogEntry, Date | string> {
   constructor() {
     super('time', 'log.eventTime', 'Time', CAT_STAND, entry => entry._source.log.eventTime, { defaultSortOrder: 'desc' });
   }
 
-  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
+  writeCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
+    const time = util.asDate(util.asScalar(value));
+
     td.style('white-space', 'pre');
     td.append('a')
       //.attr('href', 'logs/syslog/entry/' + encodeURIComponent(entry._index.substring(7)) + '/' + encodeURIComponent(entry._id))
-      .attr('title', d3filters.date(entry._source.log.eventTime, '%A %Y-%m-%d %H:%M:%S.%L%Z'))
-      .text(d3filters.ago(entry._source.log.eventTime));
+      .attr('title', d3filters.date(time, '%A %Y-%m-%d %H:%M:%S.%L%Z'))
+      .text(d3filters.ago(time));
     //td.append('br');
 
     //const decisionCategory = entry._source.wsa.aclDecision.split('_')[0];
@@ -1410,7 +1397,7 @@ class SyslogTimeColumn extends DefaultColumn<templates.BaseLogEntry, Date> {
       .text(entry._source.sql.EventType);*/
   }
 
-  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date>, HTMLElement, any>, value: ColumnValue<Date>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
+  rewriteCell(td: d3.Selection<HTMLTableCellElement, ColumnValue<Date | string>, HTMLElement, any>, value: ColumnValue<Date | string>, entry: LogDocument<templates.BaseLogEntry>, callbacks: AlterTermCallbacks) {
     td.selectAll('*').remove();
     this.writeCell(td, value, entry, callbacks);
   }

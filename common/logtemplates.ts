@@ -16,8 +16,8 @@ export interface LogCommon {
   recordFinder: string;
   receivingPort: number;
   reportingIp: string;
-  receivedTime: Date;
-  eventTime?: Date;
+  receivedTime: Date | string;
+  eventTime?: Date | string;
   tag: string[];
   message?: string;
   ipProtocol?: number;
@@ -294,71 +294,71 @@ export interface CylanceLogEntry extends BaseLogEntry {
 
 export interface SqlLogEntry extends BaseLogEntry {
   sql: {
-    TSQLCommand: string;
-    TextData: string;
+    TSQLCommand?: string;
+    TextData?: string;
     EventType: string;
-    DatabaseName: string;
-    DBUserName: string;
-    NTUserName: string;
-    NTDomainName: string;
-    HostName: string;
-    ApplicationName: string;
-    LoginName: string;
-    ServerName: string;
+    DatabaseName?: string;
+    DBUserName?: string;
+    NTUserName?: string;
+    NTDomainName?: string;
+    HostName?: string;
+    ApplicationName?: string;
+    LoginName?: string;
+    ServerName?: string;
 
     /** User who originated the session. */
-    SessionLoginName: string;
-    SchemaName: string;
-    ObjectName: string;
-    ObjectType: string;
-    OwnerName: string;
-    AlterTableActionList: string;
-    TargetObjectType: string;
-    TargetUserName: string;
-    NestLevel: number;
-    Parameters: string;
-    DefaultSchema: string;
-    PropertyName: string;
-    PropertyValue: string;
-    TargetObjectName: string;
-    TargetLoginName: string;
-    SID: string;
-    LoginSid: string;
-    TargetLoginSid: string;
+    SessionLoginName?: string;
+    SchemaName?: string;
+    ObjectName?: string;
+    ObjectType?: string;
+    OwnerName?: string;
+    AlterTableActionList?: string;
+    TargetObjectType?: string;
+    TargetUserName?: string;
+    NestLevel?: number;
+    Parameters?: string;
+    DefaultSchema?: string;
+    PropertyName?: string;
+    PropertyValue?: string;
+    TargetObjectName?: string;
+    TargetLoginName?: string;
+    SID?: string;
+    LoginSid?: string;
+    TargetLoginSid?: string;
 
     /** True for a system process, false for a user process. */
-    IsSystem: boolean;
-    Success: boolean;
+    IsSystem?: boolean;
+    Success?: boolean;
 
-    DatabaseID: number;
-    RequestID: number;
-    GroupID: number;
-    Error: number;
-    Severity: number;
+    DatabaseID?: number;
+    RequestID?: number;
+    GroupID?: number;
+    Error?: number;
+    Severity?: number;
 
     /** Session ID. */
-    SPID: number;
-    State: number;
-    ClientProcessID: number;
-    Duration: number;
-    EventClass: number;
-    EventSubClass: number;
-    Permissions: number;
+    SPID?: number;
+    State?: number;
+    ClientProcessID?: number;
+    Duration?: number;
+    EventClass?: number;
+    EventSubClass?: number;
+    Permissions?: number;
 
     /** Token that describes the current transaction. */
-    XactSequence: number;
+    XactSequence?: number;
 
     /** Sequence of the event in the request. */
-    EventSequence: number;
+    EventSequence?: number;
 
     /** Number of page reads. */
-    Reads: number;
+    Reads?: number;
 
     /** Number of page writes. */
-    Writes: number;
+    Writes?: number;
 
     /** CPU time in milliseconds. */
-    CPU: number;
+    CPU?: number;
 
     /** Means different things depending on the type.
      *
@@ -366,9 +366,35 @@ export interface SqlLogEntry extends BaseLogEntry {
      *
      * * https://docs.microsoft.com/en-us/sql/relational-databases/event-classes/lock-acquired-event-class?view=sql-server-2017
      */
-    Type: number;
+    Type?: number;
 
-    StartTime: Date;
-    EndTime: Date;
+    StartTime?: Date | string;
+    EndTime?: Date | string;
+  }
+}
+
+export interface AppStatusLogEntry extends BaseLogEntry {
+  status: {
+    processId: number;
+    processVersion: string;
+    processStatus: string;
+    program: string;
+    processStartTime: Date | string;
+    processBuildTime: Date | string;
+  }
+}
+
+export interface BunyanLogEntry extends BaseLogEntry {
+  bunyan: {
+    pid: number;
+    module: string;
+    level: number;
+    interest: number;
+    msg: string;
+    err?: {
+      name: string;
+      message: string;
+      stack: string;
+    }
   }
 }

@@ -1,17 +1,18 @@
-'use strict';
+import * as es from '../es';
+import * as logCommon from './common';
+import config = require('../config');
+import * as d3time from 'd3-time';
+import * as util from '../../common/util';
 
-const es = require('../es');
-const logCommon = require('./common');
-const config = require('../config');
-const d3 = require('d3');
-const util = require('../../common/util');
-const logColumns = require('../../common/logcolumns');
-const async = require('async');
+import { VistaLogEntry } from '../../common/logtemplates';
+import * as logColumns from '../../common/logcolumns';
+import * as async from 'async';
+import { getWikiMemoryMapSync } from '../wiki/index-maint';
 
 const MSVISTA_INDEX_ALIAS = 'msvistalog';
 const MSVISTA_TYPE = 'msvistalog';
 
-const MSVISTALOG_TEMPLATE = {
+export const MSVISTALOG_TEMPLATE = {
   template: 'msvistalog-*',
   settings: {
     'index.codec': 'best_compression',
@@ -176,12 +177,12 @@ const MSVISTALOG_TEMPLATE = {
   },
 };
 
-function getVistaLogEntry(index, id, callback) {
-  return es.client.get({ index: index, type: MSVISTA_TYPE, id: id }, callback);
+export function getVistaLogEntry(index: string, id: string, callback: (err: any, response: es.GetResponse<VistaLogEntry>) => void) {
+  return es.client.get<VistaLogEntry>({ index: index, type: MSVISTA_TYPE, id: id }, callback);
 }
 
-function getVistaLogEntriesByActivityId(id, callback) {
-  return es.client.search({
+export function getVistaLogEntriesByActivityId(id: string, callback: (err: any, response: es.SearchResponse<VistaLogEntry>) => void) {
+  return es.client.search<VistaLogEntry>({
     index: MSVISTA_INDEX_ALIAS,
     type: MSVISTA_TYPE,
     body: {
@@ -200,21 +201,16 @@ function getVistaLogEntriesByActivityId(id, callback) {
   }, callback);
 }
 
-function createVistaQuery(terms, options, startTime, endTime) {
-  options = options || {};
-
-  if(!endTime)
-    endTime = new Date();
-
-  const result = {
+function createVistaQuery(terms: util.QueryTerm[], startTime: Date, endTime: Date) {
+  const result: any = {
     bool: {
       filter: [
         // First, a broader range query that can be cached
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeHour.floor(startTime),
-              lt: d3.timeHour.ceil(endTime),
+              gte: d3time.timeHour.floor(startTime),
+              lt: d3time.timeHour.ceil(endTime),
             }
           }
         },
@@ -224,8 +220,8 @@ function createVistaQuery(terms, options, startTime, endTime) {
         {
           range: {
             'log.eventTime': {
-              gte: d3.timeMinute.floor(startTime),
-              lt: d3.timeMinute.ceil(endTime),
+              gte: d3time.timeMinute.floor(startTime),
+              lt: d3time.timeMinute.ceil(endTime),
             }
           }
         },
@@ -254,12 +250,10 @@ function createVistaQuery(terms, options, startTime, endTime) {
   let scored = { must: result.bool.must, must_not: result.bool.must_not, should: result.bool.should };
 
   // Collection of all terms sitting by themselves so they can be queried together
-  let lonelyShouldTerms = [];
+  let lonelyShouldTerms: string[] = [];
 
-  function makeTerms(terms, options) {
-    options = options || {};
-
-    const result = [
+  function makeTerms(terms: string, options: { type?: 'phrase', noFuzzies?: boolean } = {}) {
+    const result: any = [
       {
         multi_match: {
           query: terms,
@@ -320,8 +314,10 @@ function createVistaQuery(terms, options, startTime, endTime) {
       filtered[term.req].push(query);
     }
     else if(term.type === 'exists') {
-      const existsColumn = logColumns.msvistaColumnsByName.get(term.term);
-      filtered[term.req].push({ exists: { field: existsColumn.field } });
+      const existsColumn = logColumns.syslogColumnsByName.get(term.term);
+
+      if(existsColumn)
+        filtered[term.req].push({ exists: { field: existsColumn.field } });
     }
     else if(column) {
       const esterm = column.toEsTerm(term.term);
@@ -348,11 +344,18 @@ function createVistaQuery(terms, options, startTime, endTime) {
   return result;
 }
 
-function searchVistaLogs(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const parseQueryTerms = require('../wiki/util').parseQueryTerms;
-  const esQuery = createVistaQuery(parseQueryTerms(query.q), {}, startTime, endTime);
+export function searchVistaLogs(query: logCommon.SearchQuery, callback: (err: any, resp?: es.SearchResponse<VistaLogEntry>) => void) {
+  const startTime = util.createRelativeDate(query.start, false);
+
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const esQuery = createVistaQuery(util.parseQueryTerms(query.q), startTime, endTime);
   const sortColumn = logColumns.msvistaColumnsByName.get(query.sortProp);
 
   return es.client.search({
@@ -374,14 +377,14 @@ function searchVistaLogs(query, callback) {
   }, callback);
 }
 
-function findVistaLogByLocator(locator, callback) {
-  var splitLocator = locator.split('-');
+export function findVistaLogByLocator(locator: string, callback: (err: any, results?: logCommon.DocumentID[]) => void) {
+  const splitLocator = locator.split('-');
 
   if(splitLocator.length !== 2) {
-    return callback(new LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
+    return callback(new logCommon.LogError(`Invalid locator ${locator}.`, 'invalid-locator'));
   }
 
-  var date = logCommon.base64ToNumber(splitLocator[0]);
+  const date = logCommon.base64ToNumber(splitLocator[0]);
 
   es.client.search({
     index: MSVISTA_INDEX_ALIAS,
@@ -407,9 +410,9 @@ function findVistaLogByLocator(locator, callback) {
   });
 }
 
-function getVistaLogStats(callback) {
+export function getVistaLogStats(callback) {
   return async.parallel({
-    lastDay: callback => es.client.search({
+    lastDay: callback => es.client.search<VistaLogEntry>({
         index: MSVISTA_INDEX_ALIAS,
         type: MSVISTA_TYPE,
         body: {
@@ -440,7 +443,7 @@ function getVistaLogStats(callback) {
           }
         }
       }, callback),
-    statistical: callback => es.client.search({
+    statistical: callback => es.client.search<VistaLogEntry>({
         index: MSVISTA_INDEX_ALIAS,
         type: MSVISTA_TYPE,
         body: {
@@ -476,12 +479,20 @@ function getVistaLogStats(callback) {
   }, callback);
 }
 
-function findAdminLogins(query, callback) {
-  var startTime = util.createRelativeDate(query.start, false);
-  var endTime = util.createRelativeDate(query.end, true);
-  const wikiMap = require('../wiki/index-maint').getWikiMemoryMapSync();
+export function findAdminLogins(query: logCommon.SearchQuery, callback) {
+  const startTime = util.createRelativeDate(query.start, false);
 
-  return es.client.search({
+  if(!startTime)
+    return callback(new logCommon.LogError('Invalid start date for the query.', 'invalid-start-date'));
+
+  const endTime = util.createRelativeDate(query.end, true);
+
+  if(!endTime)
+    return callback(new logCommon.LogError('Invalid end date for the query.', 'invalid-end-date'));
+
+  const wikiMap = getWikiMemoryMapSync();
+
+  return es.client.search<VistaLogEntry>({
     index: MSVISTA_INDEX_ALIAS,
     type: MSVISTA_TYPE,
     body: {
@@ -492,8 +503,8 @@ function findAdminLogins(query, callback) {
             {
               range: {
                 'log.eventTime': {
-                  gte: d3.timeHour.floor(startTime),
-                  lt: d3.timeHour.ceil(endTime),
+                  gte: d3time.timeHour.floor(startTime),
+                  lt: d3time.timeHour.ceil(endTime),
                 }
               }
             },
@@ -507,8 +518,8 @@ function findAdminLogins(query, callback) {
             {
               range: {
                 'log.eventTime': {
-                  gte: d3.timeMinute.floor(startTime),
-                  lt: d3.timeMinute.ceil(endTime),
+                  gte: d3time.timeMinute.floor(startTime),
+                  lt: d3time.timeMinute.ceil(endTime),
                 }
               }
             },
@@ -553,7 +564,7 @@ function findAdminLogins(query, callback) {
       };
     }
 
-    const result = [].concat(...searchResult.aggregations.user.buckets.map(user => {
+    const result = util.combineArrays(searchResult.aggregations.user.buckets.map(user => {
       return user.computer.buckets.map(computer => {
         let computerWiki = wikiMap.byFqdn.get(computer.key);
         computerWiki = computerWiki && computerWiki[0];
@@ -574,12 +585,3 @@ function findAdminLogins(query, callback) {
     return callback(null, result);
   });
 }
-
-module.exports.MSVISTALOG_TEMPLATE = MSVISTALOG_TEMPLATE;
-
-module.exports.getVistaLogEntry = getVistaLogEntry;
-module.exports.getVistaLogEntriesByActivityId = getVistaLogEntriesByActivityId;
-module.exports.searchVistaLogs = searchVistaLogs;
-module.exports.findVistaLogByLocator = findVistaLogByLocator;
-module.exports.getVistaLogStats = getVistaLogStats;
-module.exports.findAdminLogins = findAdminLogins;

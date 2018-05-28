@@ -46,6 +46,27 @@ export function asScalar<T>(v: T | T[] | undefined | null): T | undefined {
     return v;
 }
 
+/**
+ * Ensures a Date/string is converted to a date.
+ * @param v Value to convert to a date.
+ */
+export function asDate(v: Date | number | string | undefined): Date | undefined {
+  if(v === undefined)
+    return undefined;
+  else if(typeof v === 'string' || typeof v === 'number')
+    return new Date(v);
+  else
+    return v;
+}
+
+/**
+ * Combines several arrays into one.
+ * @param v Arrays to combine.
+ */
+export function combineArrays<T>(v: T[][]): T[] {
+  return ([] as T[]).concat(...v);
+}
+
 export function shrinkTitleId(value: string): string {
   return value.toLowerCase().split(/[:/\\\-""?,&+ ]+/).filter(val => val !== '').join('-');
 }
